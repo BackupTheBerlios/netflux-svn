@@ -174,8 +174,15 @@ public class DelimitedTextParser implements SourceDataStorage
           }
         else
           {
-          throw new SourceDataStorageException( "Wrong type trying to assign field " + fieldFormat.getName( ) + " from input ["
-              + fieldScanner.match( ).group( ) + "]", record, line );
+          if( fieldFormat.isTurningErrorsToNull( ) && fieldFormat.isNullable( ) )
+            {
+            this.nullCurrentField( line, record, fieldFormat );
+            }
+          else
+            {
+            throw new SourceDataStorageException( "Wrong type trying to assign field " + fieldFormat.getName( ) + " from input ["
+                + fieldScanner.match( ).group( ) + "]", record, line );
+            }
           }
         }
       catch( NoSuchElementException exc )
@@ -294,8 +301,15 @@ public class DelimitedTextParser implements SourceDataStorage
             }
           catch( ParseException exc )
             {
-            throw new SourceDataStorageException( "Wrong type trying to assign field " + fieldFormat.getName( ) + " from input ["
-                + fieldScanner.match( ).group( ) + "]", record, line, exc );
+            if( fieldFormat.isTurningErrorsToNull( ) && fieldFormat.isNullable( ) )
+              {
+              this.nullCurrentField( line, record, fieldFormat );
+              }
+            else
+              {
+              throw new SourceDataStorageException( "Wrong type trying to assign field " + fieldFormat.getName( ) + " from input ["
+                  + fieldScanner.match( ).group( ) + "]", record, line, exc );
+              }
             }
           }
         else

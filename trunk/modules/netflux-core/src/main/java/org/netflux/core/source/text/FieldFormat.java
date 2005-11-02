@@ -32,6 +32,7 @@ public class FieldFormat
   private int     scale;
   private String  format;
   private boolean nullable;
+  private boolean turningErrorsToNull;
 
   /**
    * @return
@@ -127,5 +128,21 @@ public class FieldFormat
   public void setNullable( boolean nullable )
     {
     this.nullable = nullable;
+    }
+
+  /**
+   * @return Returns the turningErrorsToNull.
+   */
+  public boolean isTurningErrorsToNull( )
+    {
+    return this.turningErrorsToNull;
+    }
+
+  /**
+   * @param turningErrorsToNull The turningErrorsToNull to set.
+   */
+  public void setTurningErrorsToNull( boolean turningErrorsToNull )
+    {
+    this.turningErrorsToNull = turningErrorsToNull;
     }
   }
