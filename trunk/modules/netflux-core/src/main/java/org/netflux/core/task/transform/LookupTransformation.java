@@ -23,6 +23,7 @@ package org.netflux.core.task.transform;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
@@ -34,11 +35,18 @@ import org.netflux.core.RecordMetadata;
  */
 public class LookupTransformation implements Transformation
   {
-  protected String             inputFieldName;
-  protected FieldMetadata      outputFieldMetadata;
-  protected LookupTableFactory lookupTableFactory;
-  protected RecordMetadata     inputMetadata  = new RecordMetadata( );
-  protected RecordMetadata     outputMetadata = new RecordMetadata( );
+  public enum MissingBehaviour
+    {
+    DEFAULT_VALUE, PASS_THROUGH, THROW_EXCEPTION
+    }
+
+  protected String                                inputFieldName;
+  protected FieldMetadata                         outputFieldMetadata;
+  protected LookupTableFactory                    lookupTableFactory;
+  protected LookupTransformation.MissingBehaviour missingBehaviour = LookupTransformation.MissingBehaviour.DEFAULT_VALUE;
+  protected Object                                defaultValue     = null;
+  protected RecordMetadata                        inputMetadata    = new RecordMetadata( );
+  protected RecordMetadata                        outputMetadata   = new RecordMetadata( );
 
   /**
    * @return Returns the inputFieldName.
@@ -88,6 +96,38 @@ public class LookupTransformation implements Transformation
     this.lookupTableFactory = lookupTableFactory;
     }
 
+  /**
+   * @return Returns the missingBehaviour.
+   */
+  public LookupTransformation.MissingBehaviour getMissingBehaviour( )
+    {
+    return this.missingBehaviour;
+    }
+
+  /**
+   * @param missingBehaviour The missingBehaviour to set.
+   */
+  public void setMissingBehaviour( LookupTransformation.MissingBehaviour missingBehaviour )
+    {
+    this.missingBehaviour = missingBehaviour;
+    }
+
+  /**
+   * @return Returns the defaultValue.
+   */
+  public Object getDefaultValue( )
+    {
+    return this.defaultValue;
+    }
+
+  /**
+   * @param defaultValue The defaultValue to set.
+   */
+  public void setDefaultValue( Object defaultValue )
+    {
+    this.defaultValue = defaultValue;
+    }
+
   /*
    * (non-Javadoc)
    * 
@@ -132,9 +172,42 @@ public class LookupTransformation implements Transformation
   public Record transform( Record record )
     {
     Record transformedRecord = new Record( this.outputMetadata );
-    Object transformedValue = this.getLookupTableFactory( ).getLookupTable( )
-        .get( record.getValue( Object.class, this.inputFieldName ) );
-    transformedRecord.setValue( this.outputFieldMetadata.getName( ), transformedValue );
+    Object valueToTransform = record.getValue( Object.class, this.inputFieldName );
+    Map<?, ?> lookupTable = this.getLookupTableFactory( ).getLookupTable( );
+
+    if( valueToTransform != null && lookupTable.containsKey( valueToTransform ) )
+      {
+      Object transformedValue = lookupTable.get( valueToTransform );
+      transformedRecord.setValue( this.outputFieldMetadata.getName( ), transformedValue );
+      }
+    else if( valueToTransform == null )
+      {
+      transformedRecord.setValue( this.outputFieldMetadata.getName( ), valueToTransform );
+      }
+    else
+      {
+      switch( this.getMissingBehaviour( ) )
+        {
+        case DEFAULT_VALUE:
+          transformedRecord.setValue( this.outputFieldMetadata.getName( ), this.getDefaultValue( ) );
+          break;
+        case PASS_THROUGH:
+          if( this.inputMetadata.getFieldMetadata( this.getInputFieldName( ) ).getType( ) == this.getOutputFieldMetadata( ).getType( ) )
+            {
+            transformedRecord.setValue( this.outputFieldMetadata.getName( ), valueToTransform );
+            }
+          else
+            {
+            // FIXME: Throw a big exception... maybe we shouldn't allow PASS_THROUGH if input and output metadata are different...
+            transformedRecord.setValue( this.outputFieldMetadata.getName( ), this.getDefaultValue( ) );
+            }
+          break;
+        case THROW_EXCEPTION:
+          // FIXME: Throw a big exception...
+          transformedRecord.setValue( this.outputFieldMetadata.getName( ), this.getDefaultValue( ) );
+          break;
+        }
+      }
 
     return transformedRecord;
     }
