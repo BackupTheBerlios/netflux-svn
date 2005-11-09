@@ -156,8 +156,8 @@ public class DatabaseLookupFactory implements LookupTableFactory
       try
         {
         connection = this.getDataSource( ).getConnection( );
-        lookupTableStatement = connection.prepareStatement( "select \"" + this.getKeyColumnName( ) + "\", \"" + this.getValueColumnName( )
-            + "\" from " + this.getTableName( ) );
+        lookupTableStatement = connection.prepareStatement( "select \"" + this.getKeyColumnName( ) + "\", \""
+            + this.getValueColumnName( ) + "\" from \"" + this.getTableName( ) + "\"" );
         dbLookupTable = lookupTableStatement.executeQuery( );
 
         while( dbLookupTable.next( ) )
