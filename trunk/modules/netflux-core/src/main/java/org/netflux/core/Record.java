@@ -45,8 +45,20 @@ public class Record implements Comparable<Record>, Cloneable
    */
   public Record( RecordMetadata metadata )
     {
-    this.metadata = metadata;
+    this( metadata, false );
+    }
+
+  /**
+   * @param metadata
+   */
+  public Record( RecordMetadata metadata, boolean nullFields )
+    {
+    this.metadata = new RecordMetadata( metadata.getFieldMetadata( ) );
     this.data = new ArrayList<Field<? extends Object>>( Collections.nCopies( this.metadata.getFieldCount( ), (Field<Object>) null ) );
+    if( nullFields )
+      {
+      this.nullFields( this.getMetadata( ).getFieldNames( ) );
+      }
     }
 
   /**
@@ -85,6 +97,17 @@ public class Record implements Comparable<Record>, Cloneable
     for( FieldMetadata currentFieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
       {
       this.setField( currentFieldMetadata.getName( ), record.getField( currentFieldMetadata.getName( ) ) );
+      }
+    }
+
+  /**
+   * @param record
+   */
+  public void nullFields( Collection<String> fieldNames )
+    {
+    for( String fieldName : fieldNames )
+      {
+      this.setValue( fieldName, null );
       }
     }
 
@@ -276,7 +299,7 @@ public class Record implements Comparable<Record>, Cloneable
         Object currentValue = this.data.get( fieldIndex ).getValue( );
         if( currentValue instanceof Comparable )
           {
-          result = ((Comparable<Object>) currentValue).compareTo( record.data.get( fieldIndex ) );
+          result = ((Comparable<Object>) currentValue).compareTo( record.data.get( fieldIndex ).getValue( ) );
           }
         else
           {
