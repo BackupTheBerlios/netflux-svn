@@ -100,7 +100,8 @@ public class CopyTransformation implements Transformation
       while( inputFieldsIterator.hasNext( ) )
         {
         // FIXME: getFieldMetadata should throw an Exception
-        FieldMetadata currentFieldMetadata = this.inputMetadata.getFieldMetadata( inputFieldsIterator.next( ) );
+        String inputFieldName = inputFieldsIterator.next( );
+        FieldMetadata currentFieldMetadata = this.inputMetadata.getFieldMetadata( inputFieldName );
         if( currentFieldMetadata != null )
           {
           FieldMetadata outputFieldMetadata = currentFieldMetadata.clone( );
