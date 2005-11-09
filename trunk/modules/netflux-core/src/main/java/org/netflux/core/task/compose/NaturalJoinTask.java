@@ -51,7 +51,7 @@ public class NaturalJoinTask extends AbstractTask
     INNER_JOIN, LEFT_OUTER_JOIN, RIGHT_OUTER_JOIN, FULL_OUTER_JOIN
     }
 
-  private NaturalJoinTask.NaturalJoinType joinType;
+  private NaturalJoinTask.NaturalJoinType joinType = NaturalJoinTask.NaturalJoinType.INNER_JOIN;
   protected List<String>                  joinKeyFieldNames;
   protected RecordMetadata                outputMetadata;
 
@@ -88,23 +88,27 @@ public class NaturalJoinTask extends AbstractTask
     RecordMetadata leftInputMetadata = this.inputPorts.get( "leftInput" ).getMetadata( );
     RecordMetadata rightInputMetadata = this.inputPorts.get( "rightInput" ).getMetadata( );
 
-    this.joinKeyFieldNames = new LinkedList<String>( leftInputMetadata.getFieldNames( ) );
-    this.joinKeyFieldNames.retainAll( rightInputMetadata.getFieldNames( ) );
-
-    List<FieldMetadata> fieldMetadata = new LinkedList<FieldMetadata>( leftInputMetadata.getFieldMetadata( ) );
-    List<FieldMetadata> rightFieldMetadata = new LinkedList<FieldMetadata>( rightInputMetadata.getFieldMetadata( ) );
-    Iterator<FieldMetadata> rightFieldMetadataIterator = rightFieldMetadata.iterator( );
-    while( rightFieldMetadataIterator.hasNext( ) )
+    if( leftInputMetadata != null && rightInputMetadata != null )
       {
-      FieldMetadata currentFieldMetadata = rightFieldMetadataIterator.next( );
-      if( this.joinKeyFieldNames.contains( currentFieldMetadata.getName( ) ) )
-        {
-        rightFieldMetadataIterator.remove( );
-        }
-      }
-    fieldMetadata.addAll( rightFieldMetadata );
+      this.joinKeyFieldNames = new LinkedList<String>( leftInputMetadata.getFieldNames( ) );
+      this.joinKeyFieldNames.retainAll( rightInputMetadata.getFieldNames( ) );
 
-    this.outputMetadata = new RecordMetadata( fieldMetadata );
+      List<FieldMetadata> fieldMetadata = new LinkedList<FieldMetadata>( leftInputMetadata.getFieldMetadata( ) );
+      List<FieldMetadata> rightFieldMetadata = new LinkedList<FieldMetadata>( rightInputMetadata.getFieldMetadata( ) );
+      Iterator<FieldMetadata> rightFieldMetadataIterator = rightFieldMetadata.iterator( );
+      while( rightFieldMetadataIterator.hasNext( ) )
+        {
+        FieldMetadata currentFieldMetadata = rightFieldMetadataIterator.next( );
+        if( this.joinKeyFieldNames.contains( currentFieldMetadata.getName( ) ) )
+          {
+          rightFieldMetadataIterator.remove( );
+          }
+        }
+      fieldMetadata.addAll( rightFieldMetadata );
+
+      this.outputMetadata = new RecordMetadata( fieldMetadata );
+      this.outputPorts.get( "output" ).setMetadata( this.outputMetadata );
+      }
     }
 
   /*
@@ -170,12 +174,16 @@ public class NaturalJoinTask extends AbstractTask
       InputPort rightInputPort = NaturalJoinTask.this.inputPorts.get( "rightInput" );
       Channel outputPort = NaturalJoinTask.this.outputPorts.get( "output" );
 
-      List<Record> leftRecords = new LinkedList<Record>( );
-      Record lastLeftRecord = null;
-      List<Record> rightRecords = new LinkedList<Record>( );
-      Record lastRightRecord = null;
+      // Precomputed for speed
+      RecordMetadata rightMetadataWithoutKey = rightInputPort.getMetadata( ).supress( NaturalJoinTask.this.joinKeyFieldNames );
+
       try
         {
+        List<Record> leftRecords = new LinkedList<Record>( );
+        Record lastLeftRecord = leftInputPort.getRecordQueue( ).take( );
+        List<Record> rightRecords = new LinkedList<Record>( );
+        Record lastRightRecord = rightInputPort.getRecordQueue( ).take( );
+
         while( !lastLeftRecord.equals( Record.END_OF_DATA ) || !lastRightRecord.equals( Record.END_OF_DATA ) )
           {
           if( !lastLeftRecord.equals( Record.END_OF_DATA ) && leftRecords.isEmpty( ) )
@@ -242,7 +250,7 @@ public class NaturalJoinTask extends AbstractTask
               {
               for( Record leftRecord : leftRecords )
                 {
-                Record nullRightRecord = new Record( rightInputPort.getMetadata( ).supress( NaturalJoinTask.this.joinKeyFieldNames ) );
+                Record nullRightRecord = new Record( rightMetadataWithoutKey, true );
                 Record joinedRecord = leftRecord.concatenate( nullRightRecord );
                 outputPort.consume( joinedRecord );
                 }
@@ -257,9 +265,9 @@ public class NaturalJoinTask extends AbstractTask
               {
               for( Record rightRecord : rightRecords )
                 {
-                Record joinedRecord = new Record( leftInputPort.getMetadata( ) );
+                Record joinedRecord = new Record( leftInputPort.getMetadata( ), true );
                 joinedRecord.setFields( rightRecord.extract( NaturalJoinTask.this.joinKeyFieldNames ) );
-                joinedRecord.concatenate( rightRecord.supress( NaturalJoinTask.this.joinKeyFieldNames ) );
+                joinedRecord.add( rightRecord.supress( NaturalJoinTask.this.joinKeyFieldNames ) );
                 outputPort.consume( joinedRecord );
                 }
               }
