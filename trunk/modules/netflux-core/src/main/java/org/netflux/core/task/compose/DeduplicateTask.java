@@ -21,8 +21,10 @@
  */
 package org.netflux.core.task.compose;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.netflux.core.Channel;
@@ -42,12 +44,30 @@ public class DeduplicateTask extends AbstractTask
   private static final Set<String> INPUT_PORT_NAMES  = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
+  private List<String>             key               = new ArrayList<String>( );
+
   /**
    * 
    */
   public DeduplicateTask( )
     {
     super( DeduplicateTask.INPUT_PORT_NAMES, DeduplicateTask.OUTPUT_PORT_NAMES );
+    }
+
+  /**
+   * @return Returns the key.
+   */
+  public List<String> getKey( )
+    {
+    return this.key;
+    }
+
+  /**
+   * @param key The key to set.
+   */
+  public void setKey( List<String> key )
+    {
+    this.key = key;
     }
 
   /*
@@ -104,13 +124,29 @@ public class DeduplicateTask extends AbstractTask
       {
       InputPort inputPort = DeduplicateTask.this.inputPorts.get( "input" );
       Channel outputPort = DeduplicateTask.this.outputPorts.get( "output" );
+      List<String> key = DeduplicateTask.this.getKey( );
+
       Record lastRecord = null;
       try
         {
         Record record = inputPort.getRecordQueue( ).take( );
         while( !record.equals( Record.END_OF_DATA ) )
           {
-          if( lastRecord == null || !lastRecord.equals( record ) )
+          boolean differentRecordFound = false;
+          if( lastRecord == null )
+            {
+            differentRecordFound = true;
+            }
+          else if( key == null || key.isEmpty( ) )
+            {
+            differentRecordFound = !lastRecord.equals( record );
+            }
+          else
+            {
+            differentRecordFound = !lastRecord.extract( key ).equals( record.extract( key ) );
+            }
+
+          if( differentRecordFound )
             {
             outputPort.consume( record );
             lastRecord = record;
