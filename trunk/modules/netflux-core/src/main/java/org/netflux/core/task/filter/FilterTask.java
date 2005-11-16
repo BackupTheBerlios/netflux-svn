@@ -70,24 +70,13 @@ public class FilterTask extends AbstractTask
   /*
    * (non-Javadoc)
    * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
   @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
-    this.outputPorts.get( "accepted" ).setMetadata( newMetadata );
-    this.outputPorts.get( "rejected" ).setMetadata( newMetadata );
-    }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
-   */
-  public void start( )
-    {
-    // TODO: Properly handle threads
-    new FilterTaskWorker( ).start( );
+    return newMetadata;
     }
 
   /**
@@ -112,6 +101,17 @@ public class FilterTask extends AbstractTask
   public RecordSource getRejectedPort( )
     {
     return this.getOutputPort( "rejected" );
+    }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    return new FilterTaskWorker( );
     }
 
   /**
@@ -144,6 +144,7 @@ public class FilterTask extends AbstractTask
             rejectedPort.consume( record );
             }
 
+          Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
 

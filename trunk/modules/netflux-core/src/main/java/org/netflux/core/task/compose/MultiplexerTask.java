@@ -29,6 +29,7 @@ import org.netflux.core.Channel;
 import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
+import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
 import org.netflux.core.task.AbstractTask;
 
@@ -66,23 +67,54 @@ public class MultiplexerTask extends AbstractTask
   /*
    * (non-Javadoc)
    * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
   @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
-    this.outputPorts.get( "output" ).setMetadata( newMetadata );
+    // TODO Check that all input ports have the same metadata??
+    return newMetadata;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
+  /**
+   * @return
    */
-  public void start( )
+  public RecordSink getInput1Port( )
     {
-    // TODO Handle threads
-    new MultiplexerTask.MultiplexerTaskWorker( ).start( );
+    return this.getInputPort( "input1" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput2Port( )
+    {
+    return this.getInputPort( "input2" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput3Port( )
+    {
+    return this.getInputPort( "input3" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput4Port( )
+    {
+    return this.getInputPort( "input4" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput5Port( )
+    {
+    return this.getInputPort( "input5" );
     }
 
   /**
@@ -93,6 +125,21 @@ public class MultiplexerTask extends AbstractTask
     return this.getOutputPort( "output" );
     }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    // TODO Auto-generated method stub
+    return new MultiplexerTask.MultiplexerTaskWorker( );
+    }
+
+  /**
+   * @author jgonzalez
+   */
   private class MultiplexerTaskWorker extends Thread
     {
     /*
@@ -113,9 +160,9 @@ public class MultiplexerTask extends AbstractTask
           while( !record.equals( Record.END_OF_DATA ) )
             {
             outputPort.consume( record );
+            Thread.yield( );
             record = inputPort.getRecordQueue( ).take( );
             }
-
           }
         catch( InterruptedException exc )
           {

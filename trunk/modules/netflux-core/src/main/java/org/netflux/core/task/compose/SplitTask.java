@@ -22,6 +22,7 @@
 package org.netflux.core.task.compose;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -50,7 +51,6 @@ public class SplitTask extends AbstractTask
   protected List<List<String>>     fieldNamesToSplit      = new LinkedList<List<String>>( );
   protected Set<String>            fieldNamesToSplitAsSet = new HashSet<String>( );
   protected List<String>           splittedFieldNames     = new LinkedList<String>( );
-  protected RecordMetadata         outputMetadata;
 
   /**
    * 
@@ -97,10 +97,14 @@ public class SplitTask extends AbstractTask
     this.splittedFieldNames = splittedFieldNames;
     }
 
-  /**
+  /*
+   * (non-Javadoc)
    * 
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
-  protected void updateMetadata( )
+  @Override
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
     int insertionPoint = Integer.MAX_VALUE;
     RecordMetadata inputMetadata = this.inputPorts.get( "input" ).getMetadata( );
@@ -141,36 +145,18 @@ public class SplitTask extends AbstractTask
 
       fieldMetadata.addAll( insertionPoint, splittedMetadata );
 
-      this.outputMetadata = new RecordMetadata( fieldMetadata );
-      for( Channel outputPort : this.outputPorts.values( ) )
-        {
-        outputPort.setMetadata( this.outputMetadata );
-        }
+      return new RecordMetadata( fieldMetadata );
+      }
+    else
+      {
+      List<FieldMetadata> emptyMetadata = Collections.emptyList( );
+      return new RecordMetadata( emptyMetadata );
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
+  /**
+   * @return
    */
-  @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
-    {
-    this.updateMetadata( );
-    }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
-   */
-  public void start( )
-    {
-    // TODO: Thread handling
-    new SplitTaskWorker( ).start( );
-    }
-
   public RecordSink getInputPort( )
     {
     return this.getInputPort( "input" );
@@ -184,6 +170,16 @@ public class SplitTask extends AbstractTask
     return this.getOutputPort( "output" );
     }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    return new SplitTaskWorker( );
+    }
 
   /**
    * @author jgonzalez
@@ -207,7 +203,7 @@ public class SplitTask extends AbstractTask
           {
           for( List<String> nameGroup : SplitTask.this.fieldNamesToSplit )
             {
-            Record splittedRecord = new Record( SplitTask.this.outputMetadata );
+            Record splittedRecord = new Record( outputPort.getMetadata( ) );
 
             boolean nonNullFound = false;
             Iterator<String> splittedFieldNameIterator = SplitTask.this.splittedFieldNames.iterator( );
@@ -233,6 +229,7 @@ public class SplitTask extends AbstractTask
               }
             }
 
+          Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
 

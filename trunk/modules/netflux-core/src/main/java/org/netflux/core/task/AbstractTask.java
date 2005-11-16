@@ -132,9 +132,39 @@ public abstract class AbstractTask implements Task
     return this.outputPorts.get( portName );
     }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.DataSource#start()
+   */
+  public void start( )
+    {
+    // TODO: Thread handling
+    this.getTaskWorker( ).start( );
+    }
+
   /**
    * @param inputPort
    * @param newMetadata
    */
-  public abstract void updateMetadata( InputPort inputPort, RecordMetadata newMetadata );
+  protected void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
+    {
+    for( Map.Entry<String, Channel> outputPortEntry : this.outputPorts.entrySet( ) )
+      {
+      outputPortEntry.getValue( ).setMetadata( this.computeMetadata( outputPortEntry.getKey( ), inputPort, newMetadata ) );
+      }
+    }
+
+  /**
+   * @param outputPortName
+   * @param changedInputPort
+   * @param newMetadata
+   * @return
+   */
+  protected abstract RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata );
+
+  /**
+   * @return
+   */
+  protected abstract Thread getTaskWorker( );
   }

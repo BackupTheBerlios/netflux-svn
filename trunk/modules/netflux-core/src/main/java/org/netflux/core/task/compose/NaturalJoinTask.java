@@ -22,6 +22,7 @@
 package org.netflux.core.task.compose;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -53,7 +54,6 @@ public class NaturalJoinTask extends AbstractTask
 
   private NaturalJoinTask.NaturalJoinType joinType = NaturalJoinTask.NaturalJoinType.INNER_JOIN;
   protected List<String>                  joinKeyFieldNames;
-  protected RecordMetadata                outputMetadata;
 
   /**
    * 
@@ -79,10 +79,14 @@ public class NaturalJoinTask extends AbstractTask
     this.joinType = joinType;
     }
 
-  /**
+  /*
+   * (non-Javadoc)
    * 
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
-  protected void updateMetadata( )
+  @Override
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
     // TODO: Handle errors !!!!!
     RecordMetadata leftInputMetadata = this.inputPorts.get( "leftInput" ).getMetadata( );
@@ -106,31 +110,13 @@ public class NaturalJoinTask extends AbstractTask
         }
       fieldMetadata.addAll( rightFieldMetadata );
 
-      this.outputMetadata = new RecordMetadata( fieldMetadata );
-      this.outputPorts.get( "output" ).setMetadata( this.outputMetadata );
+      return new RecordMetadata( fieldMetadata );
       }
-    }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
-   */
-  @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
-    {
-    this.updateMetadata( );
-    }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
-   */
-  public void start( )
-    {
-    // TODO: Thread handling
-    new NaturalJoinTaskWorker( ).start( );
+    else
+      {
+      List<FieldMetadata> emptyMetadata = Collections.emptyList( );
+      return new RecordMetadata( emptyMetadata );
+      }
     }
 
   /**
@@ -155,6 +141,17 @@ public class NaturalJoinTask extends AbstractTask
   public RecordSource getOutputPort( )
     {
     return this.getOutputPort( "output" );
+    }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    return new NaturalJoinTaskWorker( );
     }
 
   /**
@@ -195,6 +192,7 @@ public class NaturalJoinTask extends AbstractTask
                     inputRecord.extract( NaturalJoinTask.this.joinKeyFieldNames ) ) )
               {
               leftRecords.add( inputRecord );
+              Thread.yield( );
               inputRecord = leftInputPort.getRecordQueue( ).take( );
               }
 
@@ -209,6 +207,7 @@ public class NaturalJoinTask extends AbstractTask
                     inputRecord.extract( NaturalJoinTask.this.joinKeyFieldNames ) ) )
               {
               rightRecords.add( inputRecord );
+              Thread.yield( );
               inputRecord = rightInputPort.getRecordQueue( ).take( );
               }
 

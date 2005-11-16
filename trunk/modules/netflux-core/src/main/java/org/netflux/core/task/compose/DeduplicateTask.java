@@ -73,28 +73,18 @@ public class DeduplicateTask extends AbstractTask
   /*
    * (non-Javadoc)
    * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
   @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
-    for( Channel outputPort : this.outputPorts.values( ) )
-      {
-      outputPort.setMetadata( newMetadata );
-      }
+    return newMetadata;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
+  /**
+   * @return
    */
-  public void start( )
-    {
-    // TODO: Thread handling
-    new DeduplicateTaskWorker( ).start( );
-    }
-
   public RecordSink getInputPort( )
     {
     return this.getInputPort( "input" );
@@ -108,6 +98,16 @@ public class DeduplicateTask extends AbstractTask
     return this.getOutputPort( "output" );
     }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    return new DeduplicateTaskWorker( );
+    }
 
   /**
    * @author jgonzalez
@@ -152,6 +152,7 @@ public class DeduplicateTask extends AbstractTask
             lastRecord = record;
             }
 
+          Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
 

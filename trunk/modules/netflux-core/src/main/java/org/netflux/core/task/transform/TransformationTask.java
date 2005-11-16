@@ -46,7 +46,6 @@ public class TransformationTask extends AbstractTask
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
   protected List<Transformation>   transformations   = new LinkedList<Transformation>( );
-  protected RecordMetadata         outputMetadata;
 
   /**
    * 
@@ -72,13 +71,17 @@ public class TransformationTask extends AbstractTask
     this.transformations.clear( );
     this.transformations.addAll( transformations );
 
-    this.updateMetadata( );
+    this.updateMetadata( null, null );
     }
 
-  /**
+  /*
+   * (non-Javadoc)
    * 
+   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
+   *      org.netflux.core.RecordMetadata)
    */
-  protected void updateMetadata( )
+  @Override
+  protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
     List<FieldMetadata> metadataList = new LinkedList<FieldMetadata>( );
     for( Transformation transformation : this.transformations )
@@ -87,34 +90,12 @@ public class TransformationTask extends AbstractTask
       metadataList.addAll( transformation.getOutputMetadata( ).getFieldMetadata( ) );
       }
 
-    this.outputMetadata = new RecordMetadata( metadataList );
-    for( Channel outputPort : this.outputPorts.values( ) )
-      {
-      outputPort.setMetadata( this.outputMetadata );
-      }
+    return new RecordMetadata( metadataList );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.AbstractTask#updateMetadata(org.netflux.core.InputPort, org.netflux.core.RecordMetadata)
+  /**
+   * @return
    */
-  @Override
-  public void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
-    {
-    this.updateMetadata( );
-    }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
-   */
-  public void start( )
-    {
-    new TransformationTaskWorker( ).start( );
-    }
-
   public RecordSink getInputPort( )
     {
     return this.getInputPort( "input" );
@@ -128,6 +109,16 @@ public class TransformationTask extends AbstractTask
     return this.getOutputPort( "output" );
     }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
+   */
+  @Override
+  protected Thread getTaskWorker( )
+    {
+    return new TransformationTaskWorker( );
+    }
 
   /**
    * @author jgonzalez
@@ -149,7 +140,7 @@ public class TransformationTask extends AbstractTask
         Record record = inputPort.getRecordQueue( ).take( );
         while( !record.equals( Record.END_OF_DATA ) )
           {
-          Record transformedRecord = new Record( TransformationTask.this.outputMetadata );
+          Record transformedRecord = new Record( outputPort.getMetadata( ) );
           for( Transformation transformation : TransformationTask.this.transformations )
             {
             Record partiallyTransformedRecord = transformation.transform( record );
@@ -160,6 +151,7 @@ public class TransformationTask extends AbstractTask
             }
           outputPort.consume( transformedRecord );
 
+          Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
 
