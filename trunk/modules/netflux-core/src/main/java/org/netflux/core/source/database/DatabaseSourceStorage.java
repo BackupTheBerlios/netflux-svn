@@ -217,7 +217,8 @@ public class DatabaseSourceStorage implements SourceDataStorage
         case Types.SMALLINT:
         case Types.INTEGER:
           // TODO: Check if the int type is able to handle SQL INTEGER type
-          record.setValue( fieldMetadata.getName( ), new Integer( this.resultSet.getInt( columnIndex ) ) );
+          int intValue = this.resultSet.getInt( columnIndex );
+          record.setValue( fieldMetadata.getName( ), (!this.resultSet.wasNull( )) ? new Integer( intValue ) : null );
           break;
 
         case Types.BIGINT:
@@ -230,19 +231,23 @@ public class DatabaseSourceStorage implements SourceDataStorage
           break;
 
         case Types.FLOAT:
-          record.setValue( fieldMetadata.getName( ), this.resultSet.getFloat( columnIndex ) );
+          float floatValue = this.resultSet.getFloat( columnIndex );
+          record.setValue( fieldMetadata.getName( ), (!this.resultSet.wasNull( )) ? new Float( floatValue ) : null );
           break;
 
         case Types.DOUBLE:
-          record.setValue( fieldMetadata.getName( ), this.resultSet.getDouble( columnIndex ) );
+          double doubleValue = this.resultSet.getDouble( columnIndex );
+          record.setValue( fieldMetadata.getName( ), (!this.resultSet.wasNull( )) ? new Double( doubleValue ) : null );
           break;
 
         case Types.BOOLEAN:
-          record.setValue( fieldMetadata.getName( ), new Boolean( this.resultSet.getBoolean( columnIndex ) ) );
+          boolean booleanValue = this.resultSet.getBoolean( columnIndex );
+          record.setValue( fieldMetadata.getName( ), (!this.resultSet.wasNull( )) ? new Boolean( booleanValue ) : null );
           break;
 
         default:
-          throw new SourceDataStorageException( "Type not supported: " + fieldMetadata.getType( ) + " while trying to assign: " + fieldMetadata.getName( ), record, null );
+          throw new SourceDataStorageException( "Type not supported: " + fieldMetadata.getType( ) + " while trying to assign: "
+              + fieldMetadata.getName( ), record, null );
         }
       }
     catch( SQLException exc )
