@@ -242,7 +242,7 @@ public class NaturalJoinTask extends AbstractTask
             leftRecords.clear( );
             rightRecords.clear( );
             }
-          else if( comparison == -1 )
+          else if( comparison < 0 )
             {
             if( NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.LEFT_OUTER_JOIN )
                 || NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.FULL_OUTER_JOIN ) )
@@ -258,7 +258,7 @@ public class NaturalJoinTask extends AbstractTask
             }
           else
             {
-            // comparison == 1
+            // comparison > 0
             if( NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.RIGHT_OUTER_JOIN )
                 || NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.FULL_OUTER_JOIN ) )
               {
