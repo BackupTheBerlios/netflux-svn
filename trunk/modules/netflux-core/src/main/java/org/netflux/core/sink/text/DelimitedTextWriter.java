@@ -39,6 +39,8 @@ public class DelimitedTextWriter implements TargetDataStorage
   {
   private Writer       writer;
   private OutputFormat outputFormat = new OutputFormat( );
+  private boolean      writingHeadings;
+  private boolean      headingsWritten;
 
   /**
    * 
@@ -93,6 +95,22 @@ public class DelimitedTextWriter implements TargetDataStorage
     this.outputFormat = outputFormat;
     }
 
+  /**
+   * @return Returns the writingHeadings.
+   */
+  public boolean isWritingHeadings( )
+    {
+    return this.writingHeadings;
+    }
+
+  /**
+   * @param writingHeadings The writingHeadings to set.
+   */
+  public void setWritingHeadings( boolean writingHeadings )
+    {
+    this.writingHeadings = writingHeadings;
+    }
+
   /*
    * (non-Javadoc)
    * 
@@ -100,6 +118,17 @@ public class DelimitedTextWriter implements TargetDataStorage
    */
   public void storeRecord( Record record ) throws IOException
     {
+    // Write headings if requested
+    if( !this.headingsWritten )
+      {
+      if( this.isWritingHeadings( ) )
+        {
+        this.writeHeadings( record );
+        }
+      this.headingsWritten = true;
+      }
+
+    // Write record
     int currentFieldIndex = 0;
     for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
       {
@@ -156,11 +185,27 @@ public class DelimitedTextWriter implements TargetDataStorage
         {
         this.writer.write( this.outputFormat.getDelimiter( ) );
         }
-      else if( currentFieldIndex == record.getMetadata( ).getFieldCount( ) )
+      }
+    this.writer.write( System.getProperty( "line.separator" ) );
+    }
+
+  /**
+   * @param record
+   * @throws IOException
+   */
+  protected void writeHeadings( Record record ) throws IOException
+    {
+    int currentHeadingIndex = 0;
+    for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
+      {
+      this.writer.write( fieldMetadata.getName( ) );
+      currentHeadingIndex++;
+      if( currentHeadingIndex < record.getMetadata( ).getFieldCount( ) )
         {
-        this.writer.write( System.getProperty( "line.separator" ) );
+        this.writer.write( this.outputFormat.getDelimiter( ) );
         }
       }
+    this.writer.write( System.getProperty( "line.separator" ) );
     }
 
   /**
