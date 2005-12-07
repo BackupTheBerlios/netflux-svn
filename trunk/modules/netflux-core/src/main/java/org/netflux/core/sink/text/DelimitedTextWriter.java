@@ -39,8 +39,8 @@ public class DelimitedTextWriter implements TargetDataStorage
   {
   private Writer       writer;
   private OutputFormat outputFormat = new OutputFormat( );
-  private boolean      writingHeadings;
-  private boolean      headingsWritten;
+  private boolean      headerWritten;
+  private boolean      headerAlreadyWritten;
 
   /**
    * 
@@ -96,19 +96,19 @@ public class DelimitedTextWriter implements TargetDataStorage
     }
 
   /**
-   * @return Returns the writingHeadings.
+   * @return Returns the headerWritten.
    */
-  public boolean isWritingHeadings( )
+  public boolean isHeaderWritten( )
     {
-    return this.writingHeadings;
+    return this.headerWritten;
     }
 
   /**
-   * @param writingHeadings The writingHeadings to set.
+   * @param headerWritten The headerWritten to set.
    */
-  public void setWritingHeadings( boolean writingHeadings )
+  public void setHeaderWritten( boolean headerWritten )
     {
-    this.writingHeadings = writingHeadings;
+    this.headerWritten = headerWritten;
     }
 
   /*
@@ -119,13 +119,13 @@ public class DelimitedTextWriter implements TargetDataStorage
   public void storeRecord( Record record ) throws IOException
     {
     // Write headings if requested
-    if( !this.headingsWritten )
+    if( !this.headerAlreadyWritten )
       {
-      if( this.isWritingHeadings( ) )
+      if( this.isHeaderWritten( ) )
         {
-        this.writeHeadings( record );
+        this.writeHeader( record );
         }
-      this.headingsWritten = true;
+      this.headerAlreadyWritten = true;
       }
 
     // Write record
@@ -193,7 +193,7 @@ public class DelimitedTextWriter implements TargetDataStorage
    * @param record
    * @throws IOException
    */
-  protected void writeHeadings( Record record ) throws IOException
+  protected void writeHeader( Record record ) throws IOException
     {
     int currentHeadingIndex = 0;
     for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
