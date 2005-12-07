@@ -21,9 +21,18 @@
  */
 package org.netflux.core.task.compose;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.netflux.core.Channel;
 import org.netflux.core.InputPort;
@@ -46,14 +55,31 @@ public class MultiplexerTask extends AbstractTask
     ROUND_ROBIN, SEQUENTIAL, ORDERED
     }
 
+  protected MultiplexerType type;
+  private List<String>      key = new ArrayList<String>( );
+
   /**
-   * 
+   * @param numberOfInputPorts
    */
   public MultiplexerTask( int numberOfInputPorts )
     {
-    super( MultiplexerTask.computeInputPortNames( numberOfInputPorts ), MultiplexerTask.OUTPUT_PORT_NAMES );
+    this( numberOfInputPorts, MultiplexerType.SEQUENTIAL );
     }
 
+  /**
+   * @param numberOfInputPorts
+   * @param type
+   */
+  public MultiplexerTask( int numberOfInputPorts, MultiplexerTask.MultiplexerType type )
+    {
+    super( MultiplexerTask.computeInputPortNames( numberOfInputPorts ), MultiplexerTask.OUTPUT_PORT_NAMES );
+    this.setType( type );
+    }
+
+  /**
+   * @param numberOfInputPorts
+   * @return
+   */
   protected static Set<String> computeInputPortNames( int numberOfInputPorts )
     {
     Set<String> inputPortNames = new HashSet<String>( );
@@ -62,6 +88,38 @@ public class MultiplexerTask extends AbstractTask
       inputPortNames.add( "input" + portIndex );
       }
     return inputPortNames;
+    }
+
+  /**
+   * @return Returns the type.
+   */
+  public MultiplexerType getType( )
+    {
+    return this.type;
+    }
+
+  /**
+   * @param type The type to set.
+   */
+  public void setType( MultiplexerType type )
+    {
+    this.type = type;
+    }
+
+  /**
+   * @return Returns the key.
+   */
+  public List<String> getKey( )
+    {
+    return this.key;
+    }
+
+  /**
+   * @param key The key to set.
+   */
+  public void setKey( List<String> key )
+    {
+    this.key = key;
     }
 
   /*
@@ -133,14 +191,75 @@ public class MultiplexerTask extends AbstractTask
   @Override
   protected Thread getTaskWorker( )
     {
-    // TODO Auto-generated method stub
-    return new MultiplexerTask.MultiplexerTaskWorker( );
+    switch( this.getType( ) )
+      {
+      case ROUND_ROBIN:
+        return new MultiplexerTask.RoundRobinMultiplexerTaskWorker( );
+      case SEQUENTIAL:
+        return new MultiplexerTask.SequentialMultiplexerTaskWorker( );
+      case ORDERED:
+        return new MultiplexerTask.OrderedMultiplexerTaskWorker( );
+      default:
+        // TODO: Is this the right exception to throw?
+        throw new IllegalStateException( );
+      }
     }
 
   /**
    * @author jgonzalez
    */
-  private class MultiplexerTaskWorker extends Thread
+  private class RoundRobinMultiplexerTaskWorker extends Thread
+    {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Thread#run()
+     */
+    @Override
+    public void run( )
+      {
+      Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      List<Integer> availablePorts = new LinkedList<Integer>( );
+      for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
+        {
+        availablePorts.add( portIndex );
+        }
+
+      while( !availablePorts.isEmpty( ) )
+        {
+        Iterator<Integer> availablePortIndexIterator = availablePorts.iterator( );
+        while( availablePortIndexIterator.hasNext( ) )
+          {
+          int portIndex = availablePortIndexIterator.next( );
+          InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
+          try
+            {
+            Record record = inputPort.getRecordQueue( ).take( );
+            if( !record.equals( Record.END_OF_DATA ) )
+              {
+              outputPort.consume( record );
+              Thread.yield( );
+              }
+            else
+              {
+              availablePortIndexIterator.remove( );
+              }
+            }
+          catch( InterruptedException exc )
+            {
+            // TODO: handle exception
+            exc.printStackTrace( );
+            }
+          }
+        }
+      outputPort.consume( Record.END_OF_DATA );
+      }
+    }
+
+  /**
+   * @author jgonzalez
+   */
+  private class SequentialMultiplexerTaskWorker extends Thread
     {
     /*
      * (non-Javadoc)
@@ -171,6 +290,112 @@ public class MultiplexerTask extends AbstractTask
           }
         }
       outputPort.consume( Record.END_OF_DATA );
+      }
+    }
+
+  /**
+   * @author jgonzalez
+   */
+  private class OrderedMultiplexerTaskWorker extends Thread
+    {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Thread#run()
+     */
+    @Override
+    public void run( )
+      {
+      Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      SortedSet<Record> orderedRecords = new TreeSet<Record>( new MultiplexerTask.RecordComparator( MultiplexerTask.this.getKey( ) ) );
+      Map<Record, Integer> recordSource = new HashMap<Record, Integer>( );
+      // Initial population of orderedRecords and recordSource
+      for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
+        {
+        InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
+        try
+          {
+          Record record = inputPort.getRecordQueue( ).take( );
+          if( !record.equals( Record.END_OF_DATA ) )
+            {
+            orderedRecords.add( record );
+            recordSource.put( record, portIndex );
+            }
+          }
+        catch( InterruptedException exc )
+          {
+          // TODO Auto-generated catch block
+          exc.printStackTrace( );
+          }
+        }
+
+      while( !orderedRecords.isEmpty( ) )
+        {
+        // Get first record, and the port from where we read it
+        Record firstRecord = orderedRecords.first( );
+        int sourcePortIndex = recordSource.get( firstRecord );
+
+        // Remove records
+        orderedRecords.remove( firstRecord );
+        recordSource.remove( firstRecord );
+
+        // Output of record
+        outputPort.consume( firstRecord );
+
+        // We read a new record from the port where the record originated from
+        InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + sourcePortIndex );
+        try
+          {
+          Thread.yield( );
+          Record record = inputPort.getRecordQueue( ).take( );
+          if( !record.equals( Record.END_OF_DATA ) )
+            {
+            orderedRecords.add( record );
+            recordSource.put( record, sourcePortIndex );
+            }
+          }
+        catch( InterruptedException exc )
+          {
+          // TODO: handle exception
+          exc.printStackTrace( );
+          }
+        }
+
+      outputPort.consume( Record.END_OF_DATA );
+      }
+    }
+
+  /**
+   * @author jgonzalez
+   */
+  private static class RecordComparator implements Comparator<Record>
+    {
+    private List<String> key = new ArrayList<String>( );
+
+    /**
+     * 
+     */
+    public RecordComparator( List<String> key )
+      {
+      this.key = key;
+      }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.util.Comparator#compare(T, T)
+     */
+    public int compare( Record firstRecord, Record secondRecord )
+      {
+      // TODO Auto-generated method stub
+      if( this.key == null || this.key.isEmpty( ) )
+        {
+        return firstRecord.compareTo( secondRecord );
+        }
+      else
+        {
+        return firstRecord.extract( this.key ).compareTo( secondRecord.extract( this.key ) );
+        }
       }
     }
   }
