@@ -59,7 +59,7 @@
   <licenses>
     <license>
       <name>GNU General Public License (GPL)</name>
-      <url>http://www.opensource.org/licenses/gpl-license.php</url>
+      <url>LICENSE.txt</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
