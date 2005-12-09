@@ -93,7 +93,7 @@
     </plugins>
   </build>
   <modules>
-    <module>../modules/netflux-core</module>
+    <module>modules/netflux-core</module>
     <!-- module>../modules/netflux-examples</module -->
   </modules>
   <reporting>
