@@ -95,7 +95,10 @@ public class DatabaseTargetStorage implements TargetDataStorage
 
       for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
         {
-        this.populateDatabaseField( record, fieldMetadata );
+        if( this.updateStatement.containsParameter( fieldMetadata.getName( ) ) )
+          {
+          this.populateDatabaseField( record, fieldMetadata );
+          }
         }
       this.updateStatement.executeUpdate( );
       this.connection.commit( );
@@ -180,17 +183,20 @@ public class DatabaseTargetStorage implements TargetDataStorage
    */
   public void close( )
     {
-    try
+    if( this.connection != null )
       {
-      this.updateStatement.close( );
+      try
+        {
+        this.updateStatement.close( );
+        }
+      catch( SQLException e )
+        {}
+      try
+        {
+        this.connection.close( );
+        }
+      catch( SQLException e )
+        {}
       }
-    catch( SQLException e )
-      {}
-    try
-      {
-      this.connection.close( );
-      }
-    catch( SQLException e )
-      {}
     }
   }
