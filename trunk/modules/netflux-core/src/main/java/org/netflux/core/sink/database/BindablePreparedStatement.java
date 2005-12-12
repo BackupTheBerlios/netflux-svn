@@ -40,10 +40,12 @@ import java.sql.SQLWarning;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,6 +65,23 @@ class BindablePreparedStatement implements PreparedStatement
     {
     this.preparedStatement = preparedStatement;
     this.parameterMapping = parameterMapping;
+    }
+
+  /**
+   * @return
+   */
+  public Set<String> getParameterNames( )
+    {
+    return Collections.unmodifiableSet( this.parameterMapping.keySet( ) );
+    }
+
+  /**
+   * @param parameterName
+   * @return
+   */
+  public boolean containsParameter( String parameterName )
+    {
+    return this.parameterMapping.containsKey( parameterName );
     }
 
   /*
@@ -102,9 +121,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setNull( String parameterName, int sqlType ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setNull( parameterIndex, sqlType );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setNull( parameterIndex, sqlType );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -125,9 +151,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setBoolean( String parameterName, boolean x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setBoolean( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setBoolean( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -148,9 +181,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setByte( String parameterName, byte x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setByte( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setByte( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -171,9 +211,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setShort( String parameterName, short x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setShort( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setShort( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -195,9 +242,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setInt( String parameterName, int x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setInt( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setInt( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -218,9 +272,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setLong( String parameterName, long x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setLong( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setLong( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -241,9 +302,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setFloat( String parameterName, float x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setFloat( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setFloat( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -264,9 +332,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setDouble( String parameterName, double x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setDouble( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setDouble( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -287,9 +362,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setBigDecimal( String parameterName, BigDecimal x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setBigDecimal( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setBigDecimal( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -310,9 +392,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setString( String parameterName, String x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setString( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setString( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -333,9 +422,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setBytes( String parameterName, byte[] x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setBytes( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setBytes( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -356,9 +452,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setDate( String parameterName, Date x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setDate( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setDate( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -379,9 +482,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setTime( String parameterName, Time x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setTime( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setTime( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -402,9 +512,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setTimestamp( String parameterName, Timestamp x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setTimestamp( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setTimestamp( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -426,9 +543,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setAsciiStream( String parameterName, InputStream x, int length ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setAsciiStream( parameterIndex, x, length );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setAsciiStream( parameterIndex, x, length );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -451,9 +575,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setUnicodeStream( String parameterName, InputStream x, int length ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setUnicodeStream( parameterIndex, x, length );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setUnicodeStream( parameterIndex, x, length );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -475,9 +606,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setBinaryStream( String parameterName, InputStream x, int length ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setBinaryStream( parameterIndex, x, length );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setBinaryStream( parameterIndex, x, length );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -510,9 +648,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setObject( String parameterName, Object x, int targetSqlType, int scale ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setObject( parameterIndex, x, targetSqlType, scale );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setObject( parameterIndex, x, targetSqlType, scale );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -534,9 +679,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setObject( String parameterName, Object x, int targetSqlType ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setObject( parameterIndex, x, targetSqlType );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setObject( parameterIndex, x, targetSqlType );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -557,9 +709,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setObject( String parameterName, Object x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setObject( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setObject( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -601,9 +760,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setCharacterStream( String parameterName, Reader x, int length ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setCharacterStream( parameterIndex, x, length );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setCharacterStream( parameterIndex, x, length );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -624,9 +790,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setRef( String parameterName, Ref x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setRef( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setRef( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -647,9 +820,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setBlob( String parameterName, Blob x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setBlob( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setBlob( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -670,9 +850,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setClob( String parameterName, Clob x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setClob( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setClob( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -693,9 +880,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setArray( String parameterName, Array x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setArray( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setArray( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -727,9 +921,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setDate( String parameterName, Date x, Calendar cal ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setDate( parameterIndex, x, cal );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setDate( parameterIndex, x, cal );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -751,9 +952,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setTime( String parameterName, Time x, Calendar cal ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setTime( parameterIndex, x, cal );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setTime( parameterIndex, x, cal );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -775,9 +983,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setTimestamp( String parameterName, Timestamp x, Calendar cal ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setTimestamp( parameterIndex, x, cal );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setTimestamp( parameterIndex, x, cal );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -799,9 +1014,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setNull( String parameterName, int sqlType, String typeName ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setNull( parameterIndex, sqlType, typeName );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setNull( parameterIndex, sqlType, typeName );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
@@ -822,9 +1044,16 @@ class BindablePreparedStatement implements PreparedStatement
    */
   public void setURL( String parameterName, URL x ) throws SQLException
     {
-    for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+    if( this.containsParameter( parameterName ) )
       {
-      this.preparedStatement.setURL( parameterIndex, x );
+      for( int parameterIndex : this.parameterMapping.get( parameterName ) )
+        {
+        this.preparedStatement.setURL( parameterIndex, x );
+        }
+      }
+    else
+      {
+      throw new IllegalArgumentException( "Wrong parameter: " + parameterName );
       }
     }
 
