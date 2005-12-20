@@ -29,16 +29,16 @@
   <mailingLists>
     <mailingList>
       <name>netflux users list</name>
-      <subscribe>netflux-users-subscribe@list.berlios.de</subscribe>
-      <unsubscribe>netflux-users-unsubscribe@list.berlios.de</unsubscribe>
-      <post>netflux-users@list.berlios.de</post>
+      <subscribe>netflux-users-subscribe@lists.berlios.de</subscribe>
+      <unsubscribe>netflux-users-unsubscribe@lists.berlios.de</unsubscribe>
+      <post>netflux-users@lists.berlios.de</post>
       <archive>http://lists.berlios.de/pipermail/netflux-users</archive>
     </mailingList>
     <mailingList>
       <name>netflux developer list</name>
-      <subscribe>netflux-dev-subscribe@list.berlios.de</subscribe>
-      <unsubscribe>netflux-dev-unsubscribe@list.berlios.de</unsubscribe>
-      <post>netflux-dev@list.berlios.de</post>
+      <subscribe>netflux-dev-subscribe@lists.berlios.de</subscribe>
+      <unsubscribe>netflux-dev-unsubscribe@lists.berlios.de</unsubscribe>
+      <post>netflux-dev@lists.berlios.de</post>
       <archive>http://lists.berlios.de/pipermail/netflux-dev</archive>
     </mailingList>
   </mailingLists>
@@ -48,8 +48,8 @@
       <name>Jose Gonzalez Gomez</name>
       <email>jgongo@users.berlios.de</email>
       <url>http://developer.berlios.de/blog/authors/6458-jgongo</url>
-      <organization>netflux</organization>
-      <organizationUrl>http://www.netflux.org/</organizationUrl>
+      <organization>OPEN input</organization>
+      <organizationUrl>http://www.openinput.com/</organizationUrl>
       <roles>
         <role>Creator</role>
       </roles>
@@ -64,11 +64,13 @@
     </license>
   </licenses>
   <scm>
-    <connection>svn+ssh://svn.berlios.de/svnroot/repos/netflux/trunk</connection>
+    <connection>scm:svn:http://svn.berlios.de/svnroot/repos/netflux/trunk</connection>
+    <developerConnection>scm:svn:svn+ssh://svn.berlios.de/svnroot/repos/netflux/trunk</developerConnection>
+    <url>http://svn.berlios.de/wsvn/netflux/trunk</url>
   </scm>
   <organization>
-    <name>netflux</name>
-    <url>http://www.netflux.org/</url>
+    <name>OPEN input</name>
+    <url>http://www.openinput.com/</url>
   </organization>
   <build>
     <!--
@@ -105,11 +107,11 @@
           <reportSet>
             <reports>
               <report>dependencies</report>
-              <!-- report>mailing-list</report -->
+              <report>mailing-list</report>
               <!-- report>cim</report -->
               <report>scm</report>
-              <!-- report>issue-tracking</report -->
-              <!-- report>license</report -->
+              <report>issue-tracking</report>
+              <report>license</report>
               <report>project-team</report>
             </reports>
           </reportSet>
@@ -130,6 +132,6 @@
       <name>netflux development web</name>
       <url>scp://netflux.org/home/netflux/netflux.org/html</url>
     </site>
-    <downloadUrl />
+    <downloadUrl>http://developer.berlios.de/project/showfiles.php?group_id=5138</downloadUrl>
   </distributionManagement>
 </project>

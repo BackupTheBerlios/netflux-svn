@@ -1,0 +1,46 @@
+                -----
+                netflux - Features & Benefits
+                -----
+                $Author$
+                -----
+                $Date$
+
+netflux features
+
+* netflux core
+
+    * <<Metadata based data>> - Every record travelling through the system has its corresponding
+    associated metadata to ease its manipulation.
+    
+    * <<Highly pluggable system>> - Sound architecture, with use of interfaces and JavaBeans,
+    where almost everything can be configured, enhanced or substituted.
+    
+    * <<Spring based configuration>> - No custom XML schema or DTD for configuration files, 
+    processes are expressed as {{{http://www.springframework.org/}Spring}} XML files, 
+    where you can wire up configured netflux components mixed with your home made components, 
+    transformations, etc. (if you ever need them)
+    
+    * <<Scripting support>> - Support of scripting languages using the 
+    {{{http://jakarta.apache.org/bsf/}Jakarta Bean Scripting Framework}} for specifying filter 
+    conditions, with support for transformation expressions to come in a near future. Of course,
+    the use of <<BSF>> means that you can use the scripting language of your choice (BeanShell, 
+    Javascript, Python, and many more) just dropping the corresponding jar file as long as is 
+    supported by <<BSF>>.
+    
+    * <<Pluggable data sources and sinks>> - With support for text files and any database with a
+    compliant JDBC driver (or even using the JDBC-ODBC brige, any database with an ODBC driver) 
+    out of the box, you may add your own sources or sinks just implementing a simple interface. 
+    Of course, more types of sources and sinks will be added for popular data storages.
+    
+    * <<Out of the box tasks>> - You may find a lot of already made and highly configrable tasks 
+    that will let you join, split, combine or transform your data at your will. And of course, if 
+    the transformation you need isnt't there, you just have to implement a simple interface to 
+    integrate your new transformation in the data flow.
+        
+* netflux server
+
+    Stay tuned for features in this module.
+
+* netflux gui
+
+    Stay tuned for features in this module.
