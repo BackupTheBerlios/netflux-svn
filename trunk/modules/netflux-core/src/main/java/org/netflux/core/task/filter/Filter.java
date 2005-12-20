@@ -24,7 +24,7 @@ package org.netflux.core.task.filter;
 import org.netflux.core.Record;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface Filter
   {

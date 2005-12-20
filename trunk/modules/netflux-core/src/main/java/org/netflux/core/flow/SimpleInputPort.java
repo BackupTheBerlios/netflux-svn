@@ -31,16 +31,18 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 
 /**
- * @author jgonzalez
+ * Simple implementation of an <code>InputPort</code> using a blocking queue to store records waiting to be processed.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SimpleInputPort implements InputPort
   {
   protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
-  protected RecordMetadata        metadata;
-  protected BlockingQueue<Record> buffer;
+  private RecordMetadata          metadata;
+  private BlockingQueue<Record>   buffer;
 
   /**
-   * 
+   * Creates a new <code>SimpleInputPort</code>.
    */
   public SimpleInputPort( )
     {
@@ -48,17 +50,17 @@ public class SimpleInputPort implements InputPort
     }
 
   /**
+   * Creates a new <code>SimpleInputPort</code> with the specified initial <code>capacity</code> in its internal queue.
    * 
+   * @param capacity the initial capacity of the internal queue.
    */
   public SimpleInputPort( int capacity )
     {
     this.buffer = new LinkedBlockingQueue<Record>( capacity );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.flow.SimpleChannel#consume(java.lang.Object)
+  /**
+   * This method puts the specified <code>record</code> in the internal queue, waiting to be processed.
    */
   public void consume( Record record )
     {
@@ -80,31 +82,16 @@ public class SimpleInputPort implements InputPort
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.InputPort#getRecordQueue()
-   */
   public BlockingQueue<Record> getRecordQueue( )
     {
     return this.buffer;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.InputPort#getMetadata()
-   */
   public RecordMetadata getMetadata( )
     {
     return this.metadata;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#setMetadata(org.netflux.core.RecordMetadata)
-   */
   public void setMetadata( RecordMetadata metadata )
     {
     RecordMetadata oldMetadata = this.metadata;
@@ -112,21 +99,11 @@ public class SimpleInputPort implements InputPort
     this.propertyChangeSupport.firePropertyChange( "metadata", oldMetadata, this.metadata );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#addPropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
     {
     this.propertyChangeSupport.addPropertyChangeListener( listener );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#removePropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void removePropertyChangeListener( PropertyChangeListener listener )
     {
     this.propertyChangeSupport.removePropertyChangeListener( listener );

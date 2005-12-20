@@ -34,10 +34,42 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSource;
 
+// TODO: Rethink if a error output port is suitable. Maybe this could be better solved using logging, as you shouldn't expect to
+// process or recover error records.
 /**
- * Data source that obtains data from a Reader.
+ * <p>
+ * A simple data source that obtains data from a <code>SourceDataStorage</code>. This means this class may focus on port and thread
+ * handling, as the main work of record retrieval is delegated to the <code>SourceDataStorage</code> object.
+ * </p>
+ * <p>
+ * This data source has two ports:
+ * </p>
+ * <table border="1">
+ * <tr>
+ * <th>Port name</th>
+ * <th>Description</th>
+ * <th>Metadata</th>
+ * </tr>
+ * <tr>
+ * <td>output</td>
+ * <td>Records read from the underlying storage</td>
+ * <td>As defined by the underlying storage</td>
+ * </tr>
+ * <tr>
+ * <td>error</td>
+ * <td>Records that produced some error while reading them from the underlying storage</td>
+ * <td>
+ * <ul>
+ * <li><b>_recordNumber | integer</b> - number of the record causing the error</li>
+ * <li><b>_message | varchar</b> - error message, if available</li>
+ * <li><b>_source | varchar</b> - source if available (for example, line of text of source file)</li>
+ * <li><b>record [n fields]</b> - copy of the partially populated record</li>
+ * </ul>
+ * </td>
+ * </tr>
+ * </table>
  * 
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SimpleDataSource extends AbstractDataSource
   {
@@ -47,7 +79,7 @@ public class SimpleDataSource extends AbstractDataSource
   private RecordMetadata           errorMetadata;
 
   /**
-   * 
+   * Creates a new simple data source. The created data source will have two output ports: <code>output</code> and <code>error</code>.
    */
   public SimpleDataSource( )
     {
@@ -55,7 +87,9 @@ public class SimpleDataSource extends AbstractDataSource
     }
 
   /**
-   * @return Returns the sourceDataStorage.
+   * Returns the source data storage currently associated with this data source.
+   * 
+   * @return Returns the source data storage currently associated with this data source.
    */
   public SourceDataStorage getSourceDataStorage( )
     {
@@ -63,7 +97,9 @@ public class SimpleDataSource extends AbstractDataSource
     }
 
   /**
-   * @param sourceDataStorage The sourceDataStorage to set.
+   * Sets the source data storage where this data source will be reading records from.
+   *  
+   * @param sourceDataStorage the source data storage with records to read.
    */
   public void setSourceDataStorage( SourceDataStorage sourceDataStorage )
     {
@@ -78,11 +114,6 @@ public class SimpleDataSource extends AbstractDataSource
     this.outputPorts.get( "error" ).setMetadata( this.errorMetadata );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#start()
-   */
   public void start( )
     {
     // TODO: Manage threads
@@ -90,7 +121,9 @@ public class SimpleDataSource extends AbstractDataSource
     }
 
   /**
-   * @return
+   * Returns the output port named <code>output</code>.
+   * 
+   * @return the output port named <code>output</code>.
    */
   public RecordSource getOutputPort( )
     {
@@ -98,7 +131,9 @@ public class SimpleDataSource extends AbstractDataSource
     }
 
   /**
-   * @return
+   * Returns the output port named <code>error</code>.
+   * 
+   * @return the output port named <code>error</code>.
    */
   public RecordSource getErrorPort( )
     {

@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 class BindablePreparedStatement implements PreparedStatement
   {

@@ -24,18 +24,21 @@ package org.netflux.core.flow;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.netflux.core.InvalidRecordMetadataException;
 import org.netflux.core.Record;
 
 /**
- * @author jgonzalez
+ * A channel using an internal queue as a intermediate buffer between its input and output.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class BufferedChannel extends SimpleChannel
   {
-  protected BlockingQueue<Record> buffer;
-  protected Thread                notifier;
+  private BlockingQueue<Record> buffer;
+  private NotifierThread        notifier;
 
   /**
-   * 
+   * Creates a new <code>BufferedChannel</code>.
    */
   public BufferedChannel( )
     {
@@ -45,7 +48,9 @@ public class BufferedChannel extends SimpleChannel
     }
 
   /**
-   * @param capacity
+   * Creates a new <code>BufferedChannel</code> with the specified initial <code>capacity</code> in its internal queue.
+   * 
+   * @param capacity the initial capacity of the internal queue.
    */
   public BufferedChannel( int capacity )
     {
@@ -54,53 +59,63 @@ public class BufferedChannel extends SimpleChannel
     this.notifier.start( );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.flow.SimpleChannel#consume(java.lang.Object)
+  /**
+   * Consumption implementation that internally stores the received <code>record</code> in the internal queue. The
+   * <code>record</code> will be retrieved and passed to the registered <code>RecordSink</code>s later by an internal thread.
    */
   @Override
-  public void consume( Record object )
+  public void consume( Record record )
     {
-    try
+    if( record.getMetadata( ).equals( this.getMetadata( ) ) || record.equals( Record.END_OF_DATA ) )
       {
-      this.buffer.put( object );
+      try
+        {
+        this.buffer.put( record );
+        }
+      catch( InterruptedException exc )
+        {
+        // TODO: log exception
+        exc.printStackTrace( );
+        this.notifier.errorDetected = true;
+        this.notifier.interrupt( );
+        }
       }
-    catch( InterruptedException exc )
+    else
       {
-      // TODO Auto-generated catch block
-      exc.printStackTrace( );
+      throw new InvalidRecordMetadataException( record, this.getMetadata( ) );
       }
     }
 
   /**
-   * @author jgonzalez
+   * Execution thread used to deliver records taken from the internal queue to the registered <code>RecordSink</code>s.
+   * 
+   * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
    */
-  protected class NotifierThread extends Thread
+  private class NotifierThread extends Thread
     {
+    private boolean errorDetected = false;
+
     // TODO: This is a very naive implementation of this stuff
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Thread#run()
-     */
     @Override
     public void run( )
       {
       try
         {
-        Record record;
-        do
+        Record record = BufferedChannel.this.buffer.take( );
+        while( !record.equals( Record.END_OF_DATA ) && !this.errorDetected );
           {
-          record = BufferedChannel.this.buffer.take( );
           BufferedChannel.super.consume( record );
+          record = BufferedChannel.this.buffer.take( );
           }
-        while( !record.equals( Record.END_OF_DATA ) );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        // TODO: log exception
+        }
+
+      if( this.errorDetected )
+        {
+        BufferedChannel.super.consume( Record.END_OF_DATA );
         }
       }
     }

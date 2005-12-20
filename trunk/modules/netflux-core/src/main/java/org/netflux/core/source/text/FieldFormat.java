@@ -21,8 +21,11 @@
  */
 package org.netflux.core.source.text;
 
+// TODO: Improve javadocs
 /**
- * @author jgonzalez
+ * A description of a piece of data contained in a delimited text file.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class FieldFormat
   {
@@ -35,7 +38,9 @@ public class FieldFormat
   private boolean turningErrorsToNull;
 
   /**
-   * @return
+   * Returns the name of this field.
+   * 
+   * @return the name of this field.
    */
   public String getName( )
     {
@@ -43,7 +48,9 @@ public class FieldFormat
     }
 
   /**
-   * @param name
+   * Sets the name of this field.
+   * 
+   * @param name the new name of this field.
    */
   public void setName( String name )
     {
@@ -51,7 +58,9 @@ public class FieldFormat
     }
 
   /**
-   * @return
+   * Returns the type of this field.
+   * 
+   * @return the type of this field.
    */
   public int getType( )
     {
@@ -59,7 +68,9 @@ public class FieldFormat
     }
 
   /**
-   * @param type
+   * Sets the type of this field. The type must be one of the supported types from {@link java.sql.Types}.
+   * 
+   * @param type the new type of this field.
    */
   public void setType( int type )
     {
@@ -67,7 +78,9 @@ public class FieldFormat
     }
 
   /**
-   * @return
+   * Returns the precision of this field.
+   * 
+   * @return the precision of this field.
    */
   public int getPrecision( )
     {
@@ -75,7 +88,9 @@ public class FieldFormat
     }
 
   /**
-   * @param precision
+   * Sets the precision of this field.
+   * 
+   * @param precision the new precision of this field.
    */
   public void setPrecision( int precision )
     {
@@ -83,7 +98,9 @@ public class FieldFormat
     }
 
   /**
-   * @return
+   * Returns the scale of this field.
+   * 
+   * @return the scale of this field.
    */
   public int getScale( )
     {
@@ -91,7 +108,9 @@ public class FieldFormat
     }
 
   /**
-   * @param scale
+   * Sets the scale of this field.
+   * 
+   * @param scale the new scale of this field.
    */
   public void setScale( int scale )
     {
@@ -99,7 +118,9 @@ public class FieldFormat
     }
 
   /**
-   * @return Returns the format.
+   * Returns the format of this field.
+   * 
+   * @return the format of this field.
    */
   public String getFormat( )
     {
@@ -107,7 +128,9 @@ public class FieldFormat
     }
 
   /**
-   * @param format The format to set.
+   * Sets the format of this field.
+   * 
+   * @param format the new format of this field.
    */
   public void setFormat( String format )
     {
@@ -115,7 +138,9 @@ public class FieldFormat
     }
 
   /**
-   * @return
+   * Returns <code>true</code> if this field may contain <code>null</code>s.
+   * 
+   * @return <code>true</code> if this field may contain <code>null</code>s.
    */
   public boolean isNullable( )
     {
@@ -123,7 +148,9 @@ public class FieldFormat
     }
 
   /**
-   * @param nullable
+   * Sets the nullability of this field.
+   * 
+   * @param nullable <code>true</code> if this field may contain <code>null</code>s.
    */
   public void setNullable( boolean nullable )
     {
@@ -131,7 +158,9 @@ public class FieldFormat
     }
 
   /**
-   * @return Returns the turningErrorsToNull.
+   * Returns <code>true</code> if a parsing error in this field should be transformed to a <code>null</code> value.
+   * 
+   * @return <code>true</code> if a parsing error in this field should be transformed to a <code>null</code> value.
    */
   public boolean isTurningErrorsToNull( )
     {
@@ -139,7 +168,10 @@ public class FieldFormat
     }
 
   /**
-   * @param turningErrorsToNull The turningErrorsToNull to set.
+   * Sets the behavior of this field for parsing errors.
+   * 
+   * @param turningErrorsToNull <code>true</code> if a parsing error in this field should be transformed to a <code>null</code>
+   *          value.
    */
   public void setTurningErrorsToNull( boolean turningErrorsToNull )
     {

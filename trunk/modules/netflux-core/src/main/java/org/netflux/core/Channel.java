@@ -22,7 +22,13 @@
 package org.netflux.core;
 
 /**
- * @author jgonzalez
+ * A path where records may flow through. The expected behavior of a class implementing this interface is to broadcast every record
+ * received using the {@link RecordSink#consume(Record)} method to all the registered {@link RecordSink}s. No transformation or
+ * filtering should be done on records, as this kind of behavior is expected to be placed in {@link Task}s. However, a
+ * <code>Channel</code> may do intermediate buffering or storage, logging or any other operation that doesn't modify the records
+ * themselves.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface Channel extends RecordSource, RecordSink
   {}

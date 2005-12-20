@@ -25,7 +25,7 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface Transformation
   {

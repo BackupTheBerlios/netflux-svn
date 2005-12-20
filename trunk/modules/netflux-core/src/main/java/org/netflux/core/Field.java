@@ -21,15 +21,26 @@
  */
 package org.netflux.core;
 
+import java.io.Serializable;
+
 /**
- * @author jgonzalez
+ * A container for a piece of data. A field just contains a reference to a value and provides convenience methods for hash code,
+ * equality and conversion to {@link java.lang.String} taking into account <code>null</code> values. A field is inmutable, this is,
+ * once created there is no possibility of changing the associated value.
+ * 
+ * @param <T> Type of the value to hold.
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public class Field<T>
+public class Field<T extends Serializable> implements Serializable
   {
-  private T value;
+  private static final long serialVersionUID = 2062257821266476335L;
+
+  private T                 value;
 
   /**
-   * @param value
+   * Creates a <code>Field</code> holding the specified <code>value</code>.
+   * 
+   * @param value The <code>value</code> to be held by this <code>Field</code>.
    */
   public Field( T value )
     {
@@ -37,17 +48,22 @@ public class Field<T>
     }
 
   /**
-   * @return Returns the value.
+   * Returns the value held by this field.
+   * 
+   * @return the value held by this field.
    */
   public T getValue( )
     {
     return this.value;
     }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Compares the specified object with this field for equality. Returns <code>true</code> if and only if the specified object is
+   * also a field, and the values held by them are equal. Values are considered to be equal if they are both <code>null</code> or if
+   * they are both different from <code>null</code> and the call to <code>equals</code> returns <code>true</code>.
    * 
-   * @see java.lang.Object#equals(java.lang.Object)
+   * @param object The object to be compared for equality with this field.
+   * @return <code>true</code> if the specified object is equal to this field.
    */
   @Override
   public boolean equals( Object object )
@@ -63,10 +79,11 @@ public class Field<T>
       }
     }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Returns the hash code value for this field. The hash code is computed using the hash code method of the held value. If the value
+   * is <code>null</code> this method returns <code>0</code>.
    * 
-   * @see java.lang.Object#hashCode()
+   * @return the hash code value for this field.
    */
   @Override
   public int hashCode( )
@@ -74,10 +91,11 @@ public class Field<T>
     return (this.value != null) ? this.value.hashCode( ) : 0;
     }
 
-  /*
-   * (non-Javadoc)
+  /**
+   * Returns a string representation of this field. The string representation is created calling the <code>toString</code> method on
+   * the held value. If the value is <code>null</code> then this method returns a string containing {@code <NULL>}.
    * 
-   * @see java.lang.Object#toString()
+   * @return a string representation of this field.
    */
   @Override
   public String toString( )

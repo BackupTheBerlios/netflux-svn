@@ -19,19 +19,32 @@
  *   
  * $Id$
  */
-package org.netflux.core.task.transform;
-
-import java.io.Serializable;
-import java.util.Map;
+package org.netflux.core;
 
 /**
+ * Thrown to indicate that a method has been passed a field name that can't be found.
+ * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface LookupTableFactory
+public class NoSuchFieldNameException extends IllegalArgumentException
   {
-  // TODO: Reconsider use of generics, are they correctly used?
+  private static final long serialVersionUID = -3325590738881884332L;
+
   /**
-   * @return
+   * Constructs a <code>NoSuchFieldNameException</code> with no detail message.
    */
-  public Map<? extends Object, ? extends Serializable> getLookupTable( );
+  public NoSuchFieldNameException( )
+    {
+    super( );
+    }
+
+  /**
+   * Constructs a <code>NoSuchFieldNameException</code> with the specified detail message.
+   * 
+   * @param message the detail message.
+   */
+  public NoSuchFieldNameException( String message )
+    {
+    super( message );
+    }
   }

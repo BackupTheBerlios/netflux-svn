@@ -21,21 +21,22 @@
  */
 package org.netflux.core.task.transform;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class MapLookupFactory implements LookupTableFactory
   {
-  private Map<? extends Object, ? extends Object> lookupTable;
+  private Map<? extends Object, ? extends Serializable> lookupTable;
 
   /*
    * (non-Javadoc)
    * 
    * @see org.netflux.core.task.transform.LookupTableFactory#getLookupTable()
    */
-  public Map<? extends Object, ? extends Object> getLookupTable( )
+  public Map<? extends Object, ? extends Serializable> getLookupTable( )
     {
     return this.lookupTable;
     }
@@ -43,7 +44,7 @@ public class MapLookupFactory implements LookupTableFactory
   /**
    * @param lookupTable The lookupTable to set.
    */
-  public void setLookupTable( Map<? extends Object, ? extends Object> lookupTable )
+  public void setLookupTable( Map<? extends Object, ? extends Serializable> lookupTable )
     {
     this.lookupTable = lookupTable;
     }

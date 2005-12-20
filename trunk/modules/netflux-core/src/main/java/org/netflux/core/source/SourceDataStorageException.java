@@ -23,16 +23,21 @@ package org.netflux.core.source;
 
 import org.netflux.core.Record;
 
+// TODO: Rethink implementation of fatal errors while reading from underlying storage. I feel a more object oriented approach would
+// map a fatal error to another exception class, instead of having a fatal attribute. This would be more friendly with the Java
+// exception handling mechanism
 /**
- * @author jgonzalez
+ * Thrown to indicate a problem in the underlying data storage.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SourceDataStorageException extends Exception
   {
   private static final long serialVersionUID = -3489891842797439485L;
-  
-  protected Record          partialRecord;
-  protected String          source;
-  protected boolean         fatal;
+
+  private Record            partialRecord;
+  private String            source;
+  private boolean           fatal;
 
   /**
    * @param message

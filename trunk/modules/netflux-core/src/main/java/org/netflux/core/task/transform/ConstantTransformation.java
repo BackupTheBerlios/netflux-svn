@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.transform;
 
+import java.io.Serializable;
 import java.util.Collections;
 
 import org.netflux.core.Field;
@@ -30,9 +31,9 @@ import org.netflux.core.RecordMetadata;
 
 // TODO: Type checking???????
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public class ConstantTransformation<T> implements Transformation
+public class ConstantTransformation<T extends Serializable> implements Transformation
   {
   protected FieldMetadata outputFieldMetadata;
   protected Field<T>      outputField;

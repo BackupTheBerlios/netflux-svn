@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.transform;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,17 +33,17 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DatabaseLookupFactory implements LookupTableFactory
   {
-  private DataSource                              dataSource;
-  private String                                  tableName;
-  private String                                  keyColumnName;
-  private int                                     keyType;
-  private String                                  valueColumnName;
-  private int                                     valueType;
-  private Map<? extends Object, ? extends Object> lookupTable;
+  private DataSource                     dataSource;
+  private String                         tableName;
+  private String                         keyColumnName;
+  private int                            keyType;
+  private String                         valueColumnName;
+  private int                            valueType;
+  private Map<?, ? extends Serializable> lookupTable;
 
   /**
    * @return Returns the dataSource.
@@ -145,11 +146,11 @@ public class DatabaseLookupFactory implements LookupTableFactory
    * 
    * @see org.netflux.core.task.transform.LookupTableFactory#getLookupTable()
    */
-  public Map<? extends Object, ? extends Object> getLookupTable( )
+  public Map<? extends Object, ? extends Serializable> getLookupTable( )
     {
     if( this.lookupTable == null )
       {
-      Map<Object, Object> lookupTable = new HashMap<Object, Object>( );
+      Map<Object, Serializable> lookupTable = new HashMap<Object, Serializable>( );
       Connection connection = null;
       PreparedStatement lookupTableStatement = null;
       ResultSet dbLookupTable = null;
@@ -163,7 +164,7 @@ public class DatabaseLookupFactory implements LookupTableFactory
         while( dbLookupTable.next( ) )
           {
           Object key = DatabaseLookupFactory.extractObject( dbLookupTable, this.getKeyColumnName( ), this.getKeyType( ) );
-          Object value = DatabaseLookupFactory.extractObject( dbLookupTable, this.getValueColumnName( ), this.getValueType( ) );
+          Serializable value = DatabaseLookupFactory.extractObject( dbLookupTable, this.getValueColumnName( ), this.getValueType( ) );
           lookupTable.put( key, value );
           }
         }
@@ -209,7 +210,7 @@ public class DatabaseLookupFactory implements LookupTableFactory
     return this.lookupTable;
     }
 
-  private static Object extractObject( ResultSet resultSet, String columnName, int targetType ) throws SQLException
+  private static Serializable extractObject( ResultSet resultSet, String columnName, int targetType ) throws SQLException
     {
     switch( targetType )
       {

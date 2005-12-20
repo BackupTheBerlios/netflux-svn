@@ -22,7 +22,12 @@
 package org.netflux.core;
 
 /**
- * @author jgonzalez
+ * A black box where records may arrive through some input ports, be transformed and leave through some output port. This interface
+ * should be implemented by any class wanting to do whatever transformation, filtering, aggregation, etc. on records. The implementing
+ * class should provide a constructor where all the input and output ports are initialized, and start processing records once its
+ * <code>start</code> method has been invoked.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface Task extends DataSink, DataSource
   {}

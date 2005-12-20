@@ -28,39 +28,21 @@ import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 
 /**
- * @author jgonzalez
+ * A <code>RecordSink</code> that simply discards all the records that receives.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DummyChannel implements RecordSink
   {
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#setMetadata(org.netflux.core.RecordMetadata)
-   */
   public void setMetadata( RecordMetadata metadata )
     {}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#consume(org.netflux.core.Record)
-   */
   public void consume( Record object )
     {}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#addPropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
     {}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#removePropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void removePropertyChangeListener( PropertyChangeListener listener )
     {}
   }

@@ -25,13 +25,33 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 
 /**
- * @author jgonzalez
+ * A physical data storage where records can be taken from. This class is used to abstract away from any underlying storage medium
+ * we're using. Typical implementations of this interface would include classes providing access to files or databases.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface SourceDataStorage
   {
+  /**
+   * Returns the metadata describing the data stored in this storage.
+   * 
+   * @return the metadata describing the data stored in this storage.
+   */
   public RecordMetadata getMetadata( );
 
+  /**
+   * Returns the next record available in this data storage. If no more records are available it will return a
+   * {@link Record#END_OF_DATA} record. In the event of any problem in the underlying storage, this method will throw a
+   * <code>SourceDataStorageException</code>.
+   * 
+   * @return the next record available in the data storage, {@link Record#END_OF_DATA} if no more records are available.
+   * @throws SourceDataStorageException if anything ugly happens in the underlying storage.
+   */
   public Record nextRecord( ) throws SourceDataStorageException;
 
+  /**
+   * Invoked to give this data storage the opportunity to close any underlying resource. Any exception thrown by the underlying storage
+   * while closing should be silently consumed by this method.
+   */
   public void close( );
   }

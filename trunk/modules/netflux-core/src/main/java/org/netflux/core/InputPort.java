@@ -23,12 +23,34 @@ package org.netflux.core;
 
 import java.util.concurrent.BlockingQueue;
 
+
+// TODO: This should probably be moved to another location, as this is an internal implementation detail. This has sense only for
+// people writing DataSinks or Tasks and inheriting from AbstractDataSink or AbstractTask.
 /**
+ * <p>
+ * Internal view of an input port for use in <code>DataSink</code>s and <code>Task</code>s.
+ * </p>
+ * <p>
+ * <b>NOTE:</b> This should probably be moved to another location, as this is an internal implementation detail. This has sense only
+ * for people writing <code>DataSink</code>s or <code>Task</code>s and inheriting from <code>AbstractDataSink</code> or
+ * <code>AbstractTask</code>.
+ * </p>
+ * 
  * @author jgonzalez
  */
 public interface InputPort extends RecordSink
   {
+  /**
+   * Returns the metadata associated with this input port.
+   * 
+   * @return the metadata associated with this input port.
+   */
   public RecordMetadata getMetadata( );
 
+  /**
+   * Returns the queue where all the records to be processed are stored.
+   * 
+   * @return the queue with records to be processed.
+   */
   public BlockingQueue<Record> getRecordQueue( );
   }

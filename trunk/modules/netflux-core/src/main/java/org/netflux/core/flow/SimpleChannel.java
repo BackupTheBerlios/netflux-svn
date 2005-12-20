@@ -27,34 +27,27 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.netflux.core.Channel;
+import org.netflux.core.InvalidRecordMetadataException;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 
 /**
- * @author jgonzalez
+ * A simple channel that directly forwards the records to process to the registered record sinks.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SimpleChannel implements Channel
   {
   protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
-  protected RecordMetadata        metadata;
-  protected List<RecordSink>      dataSinks             = new LinkedList<RecordSink>( );
+  private RecordMetadata          metadata;
+  private List<RecordSink>        dataSinks             = new LinkedList<RecordSink>( );
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSource#getMetadata()
-   */
   public RecordMetadata getMetadata( )
     {
     return this.metadata;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#setMetadata(org.netflux.core.RecordMetadata)
-   */
   public void setMetadata( RecordMetadata metadata )
     {
     RecordMetadata oldMetadata = this.metadata;
@@ -67,24 +60,25 @@ public class SimpleChannel implements Channel
     this.propertyChangeSupport.firePropertyChange( "metadata", oldMetadata, this.metadata );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#consume(java.lang.Object)
+  /**
+   * Consumption implementation that just iterates over the list of registered <code>RecordSink</code>s calling its
+   * {@link RecordSink#consume(Record)} method with the supplied <code>record</code>.
    */
   public void consume( Record record )
     {
-    for( RecordSink recordSink : this.dataSinks )
+    if( record.getMetadata( ).equals( this.getMetadata( ) ) || record.equals( Record.END_OF_DATA ) )
       {
-      recordSink.consume( record );
+      for( RecordSink recordSink : this.dataSinks )
+        {
+        recordSink.consume( record );
+        }
+      }
+    else
+      {
+      throw new InvalidRecordMetadataException( record, this.getMetadata( ) );
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSource#addDataSink(org.netflux.core.RecordSink)
-   */
   public void addDataSink( RecordSink dataSink )
     {
     // TODO: We should check that a record sink is taking data from only a record source
@@ -98,11 +92,6 @@ public class SimpleChannel implements Channel
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSource#removeDataSink(org.netflux.core.RecordSink)
-   */
   public void removeDataSink( RecordSink dataSink )
     {
     // TODO: We should do something with the record sink metadata
@@ -112,11 +101,6 @@ public class SimpleChannel implements Channel
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSource#setDataSinks(java.util.List)
-   */
   public void setDataSinks( List<RecordSink> dataSinks )
     {
     // TODO: We should check that a record sink is taking data from only a record source
@@ -131,21 +115,11 @@ public class SimpleChannel implements Channel
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#addPropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void addPropertyChangeListener( PropertyChangeListener listener )
     {
     this.propertyChangeSupport.addPropertyChangeListener( listener );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.RecordSink#removePropertyChangeListener(java.beans.PropertyChangeListener)
-   */
   public void removePropertyChangeListener( PropertyChangeListener listener )
     {
     this.propertyChangeSupport.removePropertyChangeListener( listener );

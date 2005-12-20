@@ -39,7 +39,7 @@ import org.netflux.core.source.SourceDataStorage;
 import org.netflux.core.source.SourceDataStorageException;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DatabaseSourceStorage implements SourceDataStorage
   {
@@ -102,9 +102,9 @@ public class DatabaseSourceStorage implements SourceDataStorage
           {
           FieldMetadata currentFieldMetadata = new FieldMetadata( resultSetMetaData.getColumnName( columnIndex ), resultSetMetaData
               .getColumnType( columnIndex ) );
-          currentFieldMetadata.setNullable( resultSetMetaData.isNullable( columnIndex ) == ResultSetMetaData.columnNullable );
-          currentFieldMetadata.setScale( resultSetMetaData.getScale( columnIndex ) );
           currentFieldMetadata.setPrecision( resultSetMetaData.getPrecision( columnIndex ) );
+          currentFieldMetadata.setScale( resultSetMetaData.getScale( columnIndex ) );
+          currentFieldMetadata.setNullable( resultSetMetaData.isNullable( columnIndex ) == ResultSetMetaData.columnNullable );
 
           fieldMetadata.add( currentFieldMetadata );
           }

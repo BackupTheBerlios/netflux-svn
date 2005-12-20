@@ -30,17 +30,37 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordSink;
 
 /**
- * @author jgonzalez
+ * <p>
+ * A simple data sink that stores data in a <code>TargetDataStorage</code>. This means this class may focus on port and thread
+ * handling, as the main work of record storage is delegated to the <code>TargetDataStorage</code> object.
+ * </p>
+ * <p>
+ * This data sink has one port:
+ * </p>
+ * <table border="1">
+ * <tr>
+ * <th>Port name</th>
+ * <th>Description</th>
+ * <th>Metadata</th>
+ * </tr>
+ * <tr>
+ * <td>input</td>
+ * <td>Records to be stored in the underlying storage</td>
+ * <td>As handled by the underlying storage</td>
+ * </tr>
+ * </table>
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SimpleDataSink extends AbstractDataSink
   {
-  private static final Set<String>  INPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
+  private static final Set<String> INPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
 
-  protected TargetDataStorage       targetDataStorage;
-  protected TargetDataStorageWorker worker;
+  private TargetDataStorage        targetDataStorage;
+  private TargetDataStorageWorker  worker;
 
   /**
-   * 
+   * Creates a new simple data sink. The created data sink will have one input ports named <code>input</code>.
    */
   public SimpleDataSink( )
     {
@@ -49,7 +69,9 @@ public class SimpleDataSink extends AbstractDataSink
     }
 
   /**
-   * @return Returns the targetDataStorage.
+   * Returns the target data storage currently associated with this data sink.
+   * 
+   * @return Returns the target data storage currently associated with this data sink.
    */
   public TargetDataStorage getTargetDataStorage( )
     {
@@ -57,7 +79,9 @@ public class SimpleDataSink extends AbstractDataSink
     }
 
   /**
-   * @param targetDataStorage The targetDataStorage to set.
+   * Sets the target data storage where this data sink will be storing records in.
+   * 
+   * @param targetDataStorage the target data storage where records will be stored.
    */
   public void setTargetDataStorage( TargetDataStorage targetDataStorage )
     {
@@ -66,7 +90,9 @@ public class SimpleDataSink extends AbstractDataSink
     }
 
   /**
-   * @return
+   * Returns the input port.
+   * 
+   * @return the input port.
    */
   public RecordSink getInputPort( )
     {
@@ -75,20 +101,12 @@ public class SimpleDataSink extends AbstractDataSink
 
   private class TargetDataStorageWorker extends Thread
     {
-    /**
-     * 
-     */
     public TargetDataStorageWorker( )
       {
       // TODO Auto-generated constructor stub
       super( "TargetDataStorageWorker" );
       }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Thread#run()
-     */
     @Override
     public void run( )
       {

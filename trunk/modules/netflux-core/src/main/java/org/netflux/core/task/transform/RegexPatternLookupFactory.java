@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.transform;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -31,25 +32,25 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class RegexPatternLookupFactory implements LookupTableFactory
   {
-  private Map<? extends Object, ? extends Object> lookupTable;
-  private List<String>                            patterns;
-  private int                                     flags;
-  private List<? extends Object>                  values;
+  private Map<? extends Object, ? extends Serializable> lookupTable;
+  private List<String>                                  patterns;
+  private int                                           flags;
+  private List<? extends Serializable>                  values;
 
   /*
    * (non-Javadoc)
    * 
    * @see org.netflux.core.task.transform.LookupTableFactory#getLookupTable()
    */
-  public Map<? extends Object, ? extends Object> getLookupTable( )
+  public Map<? extends Object, ? extends Serializable> getLookupTable( )
     {
     if( this.lookupTable == null )
       {
-      this.lookupTable = new RegexPatternMap<Object>( this.patterns, this.values, this.flags );
+      this.lookupTable = new RegexPatternMap<Serializable>( this.patterns, this.values, this.flags );
       }
     return this.lookupTable;
     }
@@ -97,7 +98,7 @@ public class RegexPatternLookupFactory implements LookupTableFactory
   /**
    * @param values The values to set.
    */
-  public void setValues( List<? extends Object> values )
+  public void setValues( List<? extends Serializable> values )
     {
     this.values = values;
     }

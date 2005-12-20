@@ -40,7 +40,7 @@ import org.netflux.core.task.AbstractTask;
 
 // TODO: Error handling
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class NaturalJoinTask extends AbstractTask
   {

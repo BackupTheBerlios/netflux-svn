@@ -40,7 +40,7 @@ import org.netflux.core.source.SourceDataStorage;
 import org.netflux.core.source.SourceDataStorageException;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DelimitedTextParser implements SourceDataStorage
   {

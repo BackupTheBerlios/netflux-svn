@@ -31,14 +31,20 @@ import org.netflux.core.RecordSource;
 import org.netflux.core.flow.SimpleChannel;
 
 /**
- * @author jgonzalez
+ * Abstract basic implementation of <code>DataSource</code>. This class provides basic support for creation and management of output
+ * ports, so any other implementation of <code>DataSource</code> could just inherit from this class and implement the missing
+ * {@link org.netflux.core.DataSource#start()} method.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public abstract class AbstractDataSource implements DataSource
   {
   protected Map<String, Channel> outputPorts = new HashMap<String, Channel>( );
 
   /**
-   * @param outputPortNames
+   * Creates a data source with a set of output ports named after <code>outputPortNames</code>.
+   * 
+   * @param outputPortNames the names of the output ports to be created.
    */
   protected AbstractDataSource( Set<String> outputPortNames )
     {
@@ -48,32 +54,17 @@ public abstract class AbstractDataSource implements DataSource
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#getOutputPortNames()
-   */
   public Set<String> getOutputPortNames( )
     {
     return this.outputPorts.keySet( );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#getOutputPorts()
-   */
   public Map<String, RecordSource> getOutputPorts( )
     {
     // TODO: Is this correct or should I use a bounded wildcard in the return type?
     return new HashMap<String, RecordSource>( this.outputPorts );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#getOutputPort(java.lang.String)
-   */
   public RecordSource getOutputPort( String portName )
     {
     return this.outputPorts.get( portName );

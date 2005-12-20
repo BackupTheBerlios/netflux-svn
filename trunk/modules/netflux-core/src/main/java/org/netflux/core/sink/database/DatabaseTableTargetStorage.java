@@ -38,7 +38,7 @@ import org.netflux.core.sink.TargetDataStorage;
 import org.netflux.core.sink.TargetDataStorageException;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DatabaseTableTargetStorage implements TargetDataStorage
   {
@@ -85,7 +85,7 @@ public class DatabaseTableTargetStorage implements TargetDataStorage
    * 
    * @see org.netflux.core.sink.TargetDataStorage#storeRecord(org.netflux.core.Record)
    */
-  public void storeRecord( Record record ) throws Exception
+  public void storeRecord( Record record ) throws TargetDataStorageException
     {
     try
       {

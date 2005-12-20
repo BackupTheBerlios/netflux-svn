@@ -24,12 +24,25 @@ package org.netflux.core.sink;
 import org.netflux.core.Record;
 
 /**
- * @author jgonzalez
+ * A physical data storage where records can be stored in. This class is used to abstract away from any underlying storage medium we're
+ * using. Typical implementations of this interface would include classes providing access to files or databases.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public interface TargetDataStorage
   {
-  // TODO: Create a specific exception?
-  public void storeRecord( Record record ) throws Exception;
+  /**
+   * Stores a record in this data storage. In the event of any problem in the underlying storage, this method will throw a
+   * <code>TargetDataStorageException</code>.
+   * 
+   * @param record the record to be stored in the data storage.
+   * @throws TargetDataStorageException if anything ugly happens in the underlying storage.
+   */
+  public void storeRecord( Record record ) throws TargetDataStorageException;
 
+  /**
+   * Invoked to give this data storage the opportunity to close any underlying resource. Any exception thrown by the underlying storage
+   * while closing should be silently consumed by this method.
+   */
   public void close( );
   }

@@ -34,7 +34,7 @@ import org.netflux.core.RecordSource;
 import org.netflux.core.task.AbstractTask;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class FilterTask extends AbstractTask
   {

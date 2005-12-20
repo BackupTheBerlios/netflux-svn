@@ -31,12 +31,20 @@ import org.netflux.core.RecordSink;
 import org.netflux.core.flow.SimpleInputPort;
 
 /**
- * @author jgonzalez
+ * Abstract basic implementation of <code>DataSink</code>. This class provides basic support for creation and management of input
+ * ports, so any other implementation of <code>DataSink</code> could just inherit from this class and implement the missing behavior.
+ * 
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public abstract class AbstractDataSink implements DataSink
   {
   protected Map<String, InputPort> inputPorts = new HashMap<String, InputPort>( );
 
+  /**
+   * Creates a data sink with a set of input ports named after <code>inputPortNames</code>.
+   * 
+   * @param inputPortNames the names of the input ports to be created.
+   */
   protected AbstractDataSink( Set<String> inputPortNames )
     {
     for( String inputPortName : inputPortNames )
@@ -45,32 +53,17 @@ public abstract class AbstractDataSink implements DataSink
       }
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSink#getInputPortNames()
-   */
   public Set<String> getInputPortNames( )
     {
     return this.inputPorts.keySet( );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSource#getInputPorts()
-   */
   public Map<String, RecordSink> getInputPorts( )
     {
     // TODO: Is this correct or should I use a bounded wildcard in the return type?
     return new HashMap<String, RecordSink>( this.inputPorts );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.DataSink#getInputPort(java.lang.String)
-   */
   public RecordSink getInputPort( String portName )
     {
     return this.inputPorts.get( portName );

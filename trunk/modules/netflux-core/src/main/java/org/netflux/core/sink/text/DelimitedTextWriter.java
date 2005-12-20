@@ -22,6 +22,7 @@
 package org.netflux.core.sink.text;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -31,9 +32,10 @@ import java.util.Date;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.sink.TargetDataStorage;
+import org.netflux.core.sink.TargetDataStorageException;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DelimitedTextWriter implements TargetDataStorage
   {
@@ -116,77 +118,85 @@ public class DelimitedTextWriter implements TargetDataStorage
    * 
    * @see org.netflux.core.sink.TargetDataStorage#storeRecord(org.netflux.core.Record)
    */
-  public void storeRecord( Record record ) throws IOException
+  public void storeRecord( Record record ) throws TargetDataStorageException
     {
-    // Write headings if requested
-    if( !this.headerAlreadyWritten )
+    try
       {
-      if( this.isHeaderWritten( ) )
+      // Write headings if requested
+      if( !this.headerAlreadyWritten )
         {
-        this.writeHeader( record );
-        }
-      this.headerAlreadyWritten = true;
-      }
-
-    // Write record
-    int currentFieldIndex = 0;
-    for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
-      {
-      if( record.getField( fieldMetadata.getName( ) ) == null )
-        {
-        this.writer.write( "<MISSING>" );
-        }
-      else if( record.getValue( Object.class, fieldMetadata.getName( ) ) != null )
-        {
-        switch( fieldMetadata.getType( ) )
+        if( this.isHeaderWritten( ) )
           {
-          case Types.CHAR:
-          case Types.VARCHAR:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), String.class ) );
-            break;
+          this.writeHeader( record );
+          }
+        this.headerAlreadyWritten = true;
+        }
 
-          case Types.DATE:
-          case Types.TIMESTAMP:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), Date.class ) );
-            break;
+      // Write record
+      int currentFieldIndex = 0;
+      for( FieldMetadata fieldMetadata : record.getMetadata( ).getFieldMetadata( ) )
+        {
+        if( record.getField( fieldMetadata.getName( ) ) == null )
+          {
+          this.writer.write( "<MISSING>" );
+          }
+        else if( record.getValue( Serializable.class, fieldMetadata.getName( ) ) != null )
+          {
+          switch( fieldMetadata.getType( ) )
+            {
+            case Types.CHAR:
+            case Types.VARCHAR:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), String.class ) );
+              break;
 
-          case Types.SMALLINT:
-          case Types.INTEGER:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), Integer.class ) );
-            break;
+            case Types.DATE:
+            case Types.TIMESTAMP:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), Date.class ) );
+              break;
 
-          case Types.BIGINT:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), BigInteger.class ) );
-            break;
+            case Types.SMALLINT:
+            case Types.INTEGER:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), Integer.class ) );
+              break;
 
-          case Types.DECIMAL:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), BigDecimal.class ) );
-            break;
+            case Types.BIGINT:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), BigInteger.class ) );
+              break;
 
-          case Types.FLOAT:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), Float.class ) );
-            break;
+            case Types.DECIMAL:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), BigDecimal.class ) );
+              break;
 
-          case Types.DOUBLE:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), Double.class ) );
-            break;
+            case Types.FLOAT:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), Float.class ) );
+              break;
 
-          case Types.BOOLEAN:
-            this.writer.write( this.formatField( record, fieldMetadata.getName( ), Boolean.class ) );
-            break;
+            case Types.DOUBLE:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), Double.class ) );
+              break;
 
-          default:
-          // TODO
+            case Types.BOOLEAN:
+              this.writer.write( this.formatField( record, fieldMetadata.getName( ), Boolean.class ) );
+              break;
+
+            default:
+            // TODO
+            }
+          }
+
+        currentFieldIndex++;
+        if( currentFieldIndex < record.getMetadata( ).getFieldCount( ) )
+          {
+          this.writer.write( this.outputFormat.getDelimiter( ) );
           }
         }
-
-      currentFieldIndex++;
-      if( currentFieldIndex < record.getMetadata( ).getFieldCount( ) )
-        {
-        this.writer.write( this.outputFormat.getDelimiter( ) );
-        }
+      this.writer.write( System.getProperty( "line.separator" ) );
       }
-    this.writer.write( System.getProperty( "line.separator" ) );
+    catch( IOException exc )
+      {
+      // TODO: handle exception
+      throw new TargetDataStorageException( exc.getLocalizedMessage( ), exc );
+      }
     }
 
   /**
@@ -215,7 +225,7 @@ public class DelimitedTextWriter implements TargetDataStorage
    * @param clazz
    * @return
    */
-  protected <T> String formatField( Record record, String fieldName, Class<T> clazz )
+  protected <T extends Serializable> String formatField( Record record, String fieldName, Class<T> clazz )
     {
     String formattedField = null;
 

@@ -38,7 +38,7 @@ import org.netflux.core.flow.SimpleChannel;
 import org.netflux.core.flow.SimpleInputPort;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public abstract class AbstractTask implements Task
   {

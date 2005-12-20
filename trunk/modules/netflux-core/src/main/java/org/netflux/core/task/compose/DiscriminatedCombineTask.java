@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.compose;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -33,7 +34,7 @@ import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class DiscriminatedCombineTask extends CombineTask
   {
@@ -137,7 +138,7 @@ public class DiscriminatedCombineTask extends CombineTask
             lastKey = record.extract( groupingKeyFieldNames );
             }
 
-          Object discriminatorValue = record.getValue( Object.class, DiscriminatedCombineTask.this.getDiscriminatorFieldName( ) );
+          Object discriminatorValue = record.getValue( Serializable.class, DiscriminatedCombineTask.this.getDiscriminatorFieldName( ) );
           int discriminatorIndex = DiscriminatedCombineTask.this.getDiscriminatorValues( ).indexOf( discriminatorValue );
           List<String> currentCombinedFieldNames = DiscriminatedCombineTask.this.getCombinedFieldNames( ).get( discriminatorIndex );
           Iterator<String> combinedFieldNamesIterator = currentCombinedFieldNames.iterator( );

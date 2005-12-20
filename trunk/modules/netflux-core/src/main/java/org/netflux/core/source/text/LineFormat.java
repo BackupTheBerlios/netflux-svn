@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * @author jgonzalez
+ * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class LineFormat
   {
