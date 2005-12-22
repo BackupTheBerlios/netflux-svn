@@ -417,10 +417,16 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
     }
 
   /**
+   * <p>
    * Compares this record with the specified record for order. The order is determined comparing the records field by field preserving
    * the order specified by the metadata. In order to compare two records, they must have the same metadata, if they don't a
    * <code>ClassCastException</code> is thrown. This exception is also thrown if some of the values in this record doesn't implement
    * <code>Comparable</code>.
+   * </p>
+   * <p>
+   * While comparing a <code>null</code> value is considered to be equal to another <code>null</code> value, and less than any
+   * other value.
+   * </p>
    * 
    * @param record the record to be compared.
    * @return a negative integer, zero, or a positive integer as this record is less than, equal to, or greater than the specified
@@ -437,7 +443,11 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       for( int fieldIndex = 0; fieldIndex < this.data.size( ) && result == 0; fieldIndex++ )
         {
         Object currentValue = this.data.get( fieldIndex ).getValue( );
-        if( currentValue instanceof Comparable )
+        if( currentValue == null )
+          {
+          result = (record.data.get( fieldIndex ).getValue( ) == null) ? 0 : -1;
+          }
+        else if( currentValue instanceof Comparable )
           {
           result = ((Comparable<Object>) currentValue).compareTo( record.data.get( fieldIndex ).getValue( ) );
           }
