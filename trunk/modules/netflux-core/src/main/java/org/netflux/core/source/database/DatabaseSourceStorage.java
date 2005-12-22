@@ -111,9 +111,10 @@ public class DatabaseSourceStorage implements SourceDataStorage
 
         this.recordMetadata = new RecordMetadata( fieldMetadata );
         }
-      catch( SQLException e )
+      catch( SQLException exc )
         {
         // TODO: Exception handling
+        exc.printStackTrace( );
         this.recordMetadata = null;
         }
       finally
