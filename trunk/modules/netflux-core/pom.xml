@@ -5,6 +5,7 @@
     <version>0.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
+  <groupId>org.netflux</groupId>
   <artifactId>netflux-core</artifactId>
   <name>netflux core</name>
   <version>0.1</version>
