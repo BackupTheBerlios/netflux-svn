@@ -1,18 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project>
   <parent>
-    <groupId>org.netflux</groupId>
     <artifactId>netflux</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <groupId>org.netflux</groupId>
+    <version>0.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>netflux-core</artifactId>
-  <packaging>jar</packaging>
   <name>netflux core</name>
+  <version>0.1</version>
   <scm>
-    <connection>scm:svn:http://svn.berlios.de/svnroot/repos/netflux/trunk/modules/netflux-core</connection>
-    <developerConnection>scm:svn:svn+ssh://svn.berlios.de/svnroot/repos/netflux/trunk/modules/netflux-core</developerConnection>
-    <url>http://svn.berlios.de/wsvn/netflux/trunk/modules/netflux-core</url>
+    <connection>scm:svn:http://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1/modules/netflux-core</connection>
+    <developerConnection>scm:svn:svn+ssh://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1/modules/netflux-core</developerConnection>
+    <url>http://svn.berlios.de/wsvn/netflux/tags/release-0.1/modules/netflux-core</url>
   </scm>
   <pluginRepositories>
     <pluginRepository>
@@ -43,7 +42,6 @@
   <reporting>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <charset>UTF-8</charset>
@@ -54,17 +52,6 @@
           </links>
         </configuration>
       </plugin>
-      <!-- Not working right now due to locale issue -->
-      <!-- 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>surefire-report-maven-plugin</artifactId>
-      </plugin>
-      -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>changelog-maven-plugin</artifactId>
