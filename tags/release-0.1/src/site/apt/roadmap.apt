@@ -1,0 +1,25 @@
+                -----
+                netflux - Road Map
+                -----
+                $Author$
+                -----
+                $Date$
+
+Current status
+
+    <<netflux core>> is in an alpha but quite usable state. We're using it to implement some of
+    our ETL processes without any problem. Please, take a look at the {{{features.html}features}}
+    document to see the currently implemented features.
+    
+Where are we going?
+
+    Here is a rough planning of future versions:
+    
+    * <<0.1>> - Basic support for ETL processes, incluing reading and writing text files and
+    databases, with a usable set of tasks, filters and transformations.
+    
+    * <<0.2>> - Support for phases inside a process, possibly including some tasks for execution
+    of arbitrary SQL statements (mainly intended as DDL/DML statements used to put database sinks 
+    in a known state before beginning the real ETL process)
+    
+    * <<0.3>> - TBD

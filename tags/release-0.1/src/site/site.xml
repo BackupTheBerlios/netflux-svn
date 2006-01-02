@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Netflux">
+  <bannerLeft>
+    <name>netflux</name>
+    <!-- src>http://maven.apache.org/images/apache-maven-project.png</src -->
+    <href>http://www.netflux.org/</href>
+  </bannerLeft>
+<!--
+  <bannerRight>
+    <src>http://maven.apache.org/images/maven-small.gif</src>
+  </bannerRight>
+-->
+  <body>
+    <links>
+      <item name="netflux core" href="http://www.netflux.org/netflux-core/" />
+      <item name="Maven" href="http://maven.apache.org/"/>
+      <item name="Spring" href="http://www.springframework.org/"/>
+    </links>
+
+    <menu name="netflux">
+      <item name="Introduction" href="index.html"/>
+      <item name="Features" href="features.html" />
+      <item name="Road Map" href="roadmap.html" />
+      <item name="Download" href="download.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>

@@ -1,0 +1,124 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.netflux</groupId>
+  <artifactId>netflux</artifactId>
+  <packaging>pom</packaging>
+  <name>netflux ETL tool</name>
+  <version>0.1</version>
+  <url>http://www.netflux.org/</url>
+  <issueManagement>
+    <system>BerliOS issue management system</system>
+    <url>http://developer.berlios.de/bugs/?group_id=5138</url>
+  </issueManagement>
+  <ciManagement>
+    <system>No countinous integration management yet</system>
+    <url>http://www.netflux.org/</url>
+    <notifiers>
+      <notifier>
+        <type>Unknown</type>
+        <address>DEPRECATED</address>
+      </notifier>
+    </notifiers>
+  </ciManagement>
+  <inceptionYear>2005</inceptionYear>
+  <mailingLists>
+    <mailingList>
+      <name>netflux users list</name>
+      <subscribe>netflux-users-subscribe@lists.berlios.de</subscribe>
+      <unsubscribe>netflux-users-unsubscribe@lists.berlios.de</unsubscribe>
+      <post>netflux-users@lists.berlios.de</post>
+      <archive>http://lists.berlios.de/pipermail/netflux-users</archive>
+    </mailingList>
+    <mailingList>
+      <name>netflux developer list</name>
+      <subscribe>netflux-dev-subscribe@lists.berlios.de</subscribe>
+      <unsubscribe>netflux-dev-unsubscribe@lists.berlios.de</unsubscribe>
+      <post>netflux-dev@lists.berlios.de</post>
+      <archive>http://lists.berlios.de/pipermail/netflux-dev</archive>
+    </mailingList>
+  </mailingLists>
+  <developers>
+    <developer>
+      <id>jgongo</id>
+      <name>Jose Gonzalez Gomez</name>
+      <email>jgongo@users.berlios.de</email>
+      <url>http://developer.berlios.de/blog/authors/6458-jgongo</url>
+      <organization>OPEN input</organization>
+      <organizationUrl>http://www.openinput.com/</organizationUrl>
+      <roles>
+        <role>Creator</role>
+      </roles>
+      <timezone>1</timezone>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>GNU General Public License (GPL)</name>
+      <url>LICENSE.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:svn:http://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1</connection>
+    <developerConnection>scm:svn:svn+ssh://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1</developerConnection>
+    <url>http://svn.berlios.de/wsvn/netflux/tags/release-0.1</url>
+  </scm>
+  <organization>
+    <name>OPEN input</name>
+    <url>http://www.openinput.com/</url>
+  </organization>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <tagBase>svn+ssh://svn.berlios.de/svnroot/repos/netflux/tags</tagBase>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <modules>
+    <module>modules/netflux-core</module>
+  </modules>
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>dependencies</report>
+              <report>mailing-list</report>
+              <report>scm</report>
+              <report>issue-tracking</report>
+              <report>license</report>
+              <report>project-team</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+  <distributionManagement>
+    <repository>
+      <uniqueVersion>false</uniqueVersion>
+      <id>netflux.org</id>
+      <name>netflux Maven2 repository</name>
+      <url>scp://netflux.org/home/netflux/netflux.org/html/maven2</url>
+    </repository>
+    <site>
+      <id>netflux.org</id>
+      <name>netflux development web</name>
+      <url>scp://netflux.org/home/netflux/netflux.org/html</url>
+    </site>
+    <downloadUrl>http://developer.berlios.de/project/showfiles.php?group_id=5138</downloadUrl>
+  </distributionManagement>
+</project>

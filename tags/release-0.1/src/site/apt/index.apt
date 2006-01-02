@@ -1,0 +1,36 @@
+                -----
+                netflux - Introduction
+                -----
+                $Author$
+                -----
+                $Date$
+
+What is netflux?
+
+    netflux aims to be an ETL (Extract, Transform & Load) tool providing the following:
+    
+    [[1]] <<netflux core>> - A set of core classes that may be used programatically 
+    to be embedded in any application, letting you to extract data from several sources,
+    transform that data in metadata controlled data flows, and load that data into 
+    several kinds of sinks.
+    
+    [[2]] <<netflux server>> - A server able to run ETL processes, either on demand or in
+    batch mode, letting you to automate those ETL processes.
+    
+    [[3]] <<netflux gui>> - A graphical tool able to edit and run ETL processes, either 
+    standalone or connected to a netflux server.
+    
+Why another ETL tool?
+
+    Some time ago we had the need for an ETL tool to automate some data transformation processes. We
+    evaluated some of the tools available at that moment, but we weren't happy with them, so we
+    started to develop our own solution.
+
+    <<netflux>> tries to build upon a sound architecture, based on well known patterns and the good
+    old JavaBeans infrastructure. This way <<netflux>> becomes a highly modular framework, where almost 
+    everything can be substituted or enhanced using your own classes. You want to connect to some database?
+    Just drop in your JDBC driver and inject your desired <<<Datasource>>> in the right place. You want to
+    create some home made transformation? Just implement the provided interface and include the transformation
+    in the list of transformations of a transform task. You want to handle your data in some way we didn't 
+    foresee? Just create your own task following just a few simple guidelines and place it right in the heart
+    of the data flow.
