@@ -22,10 +22,9 @@ netflux features
     
     * <<Scripting support>> - Support of scripting languages using the 
     {{{http://jakarta.apache.org/bsf/}Jakarta Bean Scripting Framework}} for specifying filter 
-    conditions, with support for transformation expressions to come in a near future. Of course,
-    the use of <<BSF>> means that you can use the scripting language of your choice (BeanShell, 
-    Javascript, Python, and many more) just dropping the corresponding jar file as long as is 
-    supported by <<BSF>>.
+    conditions and transformation expressions. Of course, the use of <<BSF>> means that you 
+    can use the scripting language of your choice (BeanShell, Javascript, Python, and many more) 
+    just dropping the corresponding jar file as long as is supported by <<BSF>>.
     
     * <<Pluggable data sources and sinks>> - With support for text files and any database with a
     compliant JDBC driver (or even using the JDBC-ODBC brige, any database with an ODBC driver) 
