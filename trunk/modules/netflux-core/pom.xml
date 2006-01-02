@@ -8,7 +8,7 @@
   <groupId>org.netflux</groupId>
   <artifactId>netflux-core</artifactId>
   <name>netflux core</name>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <scm>
     <connection>scm:svn:http://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1/modules/netflux-core</connection>
     <developerConnection>scm:svn:svn+ssh://svn.berlios.de/svnroot/repos/netflux/tags/release-0.1/modules/netflux-core</developerConnection>

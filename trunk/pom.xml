@@ -4,7 +4,7 @@
   <artifactId>netflux</artifactId>
   <packaging>pom</packaging>
   <name>netflux ETL tool</name>
-  <version>0.1</version>
+  <version>0.2-SNAPSHOT</version>
   <url>http://www.netflux.org/</url>
   <issueManagement>
     <system>BerliOS issue management system</system>
