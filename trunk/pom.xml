@@ -92,6 +92,13 @@
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <tagBase>svn+ssh://svn.berlios.de/svnroot/repos/netflux/tags</tagBase>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <modules>
