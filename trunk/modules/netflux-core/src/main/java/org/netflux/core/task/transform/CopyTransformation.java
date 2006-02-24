@@ -101,9 +101,9 @@ public class CopyTransformation implements Transformation
         {
         // FIXME: getFieldMetadata should throw an Exception
         String inputFieldName = inputFieldsIterator.next( );
-        FieldMetadata currentFieldMetadata = this.inputMetadata.getFieldMetadata( inputFieldName );
-        if( currentFieldMetadata != null )
+        if( this.inputMetadata.getFieldIndex( inputFieldName ) != -1 )
           {
+          FieldMetadata currentFieldMetadata = this.inputMetadata.getFieldMetadata( inputFieldName );
           FieldMetadata outputFieldMetadata = currentFieldMetadata.clone( );
           outputFieldMetadata.setName( outputFieldsIterator.next( ) );
           newOutputMetadata.add( outputFieldMetadata );

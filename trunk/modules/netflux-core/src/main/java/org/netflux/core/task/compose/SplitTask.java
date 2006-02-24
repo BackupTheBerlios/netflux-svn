@@ -128,8 +128,7 @@ public class SplitTask extends AbstractTask
       for( String fieldName : this.fieldNamesToSplit.get( 0 ) )
         {
         // FIXME: Do this properly: getFieldMetadata should throw an Exception
-        FieldMetadata currentFieldMetadata = inputMetadata.getFieldMetadata( fieldName );
-        if( currentFieldMetadata != null )
+        if( inputMetadata.getFieldIndex( fieldName ) != -1 )
           {
           FieldMetadata currentSplittedMetadata = inputMetadata.getFieldMetadata( fieldName ).clone( );
           currentSplittedMetadata.setName( splittedFieldNameIterator.next( ) );
