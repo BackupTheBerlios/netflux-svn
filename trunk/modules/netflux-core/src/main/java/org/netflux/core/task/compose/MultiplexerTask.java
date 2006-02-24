@@ -23,6 +23,7 @@ package org.netflux.core.task.compose;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.UUID;
 
 import org.netflux.core.Channel;
 import org.netflux.core.InputPort;
@@ -41,6 +41,7 @@ import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
 import org.netflux.core.task.AbstractTask;
+import org.netflux.core.task.util.RecordComparator;
 
 /**
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
@@ -178,6 +179,38 @@ public class MultiplexerTask extends AbstractTask
   /**
    * @return
    */
+  public RecordSink getInput6Port( )
+    {
+    return this.getInputPort( "input6" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput7Port( )
+    {
+    return this.getInputPort( "input7" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput8Port( )
+    {
+    return this.getInputPort( "input8" );
+    }
+
+  /**
+   * @return
+   */
+  public RecordSink getInput9Port( )
+    {
+    return this.getInputPort( "input9" );
+    }
+
+  /**
+   * @return
+   */
   public RecordSource getOutputPort( )
     {
     return this.getOutputPort( "output" );
@@ -298,6 +331,21 @@ public class MultiplexerTask extends AbstractTask
    */
   private class OrderedMultiplexerTaskWorker extends Thread
     {
+    protected UUID insertOrderedRecord( List<Record> buffer, List<UUID> recordIDs, Record record, Comparator<Record> recordComparator )
+      {
+      UUID recordID = UUID.randomUUID( );
+      // Insert the record in the right position.
+      int insertionPoint = Collections.binarySearch( buffer, record, recordComparator );
+      if( insertionPoint < 0 )
+        {
+        insertionPoint = -insertionPoint - 1;
+        }
+      buffer.add( insertionPoint, record );
+      recordIDs.add( insertionPoint, recordID );
+
+      return recordID;
+      }
+
     /*
      * (non-Javadoc)
      * 
@@ -307,8 +355,11 @@ public class MultiplexerTask extends AbstractTask
     public void run( )
       {
       Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
-      SortedSet<Record> orderedRecords = new TreeSet<Record>( new MultiplexerTask.RecordComparator( MultiplexerTask.this.getKey( ) ) );
-      Map<Record, Integer> recordSource = new HashMap<Record, Integer>( );
+      List<Record> orderedRecords = new ArrayList<Record>( );
+      List<UUID> recordIDs = new ArrayList<UUID>( );
+      Comparator<Record> recordComparator = new RecordComparator( MultiplexerTask.this.getKey( ) );
+      Map<UUID, Integer> recordSource = new HashMap<UUID, Integer>( );
+
       // Initial population of orderedRecords and recordSource
       for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
         {
@@ -318,8 +369,8 @@ public class MultiplexerTask extends AbstractTask
           Record record = inputPort.getRecordQueue( ).take( );
           if( !record.equals( Record.END_OF_DATA ) )
             {
-            orderedRecords.add( record );
-            recordSource.put( record, portIndex );
+            UUID recordID = this.insertOrderedRecord( orderedRecords, recordIDs, record, recordComparator );
+            recordSource.put( recordID, portIndex );
             }
           }
         catch( InterruptedException exc )
@@ -331,13 +382,10 @@ public class MultiplexerTask extends AbstractTask
 
       while( !orderedRecords.isEmpty( ) )
         {
-        // Get first record, and the port from where we read it
-        Record firstRecord = orderedRecords.first( );
-        int sourcePortIndex = recordSource.get( firstRecord );
-
-        // Remove records
-        orderedRecords.remove( firstRecord );
-        recordSource.remove( firstRecord );
+        // Get first record, and the port from where we read it, and remove them
+        Record firstRecord = orderedRecords.remove( 0 );
+        UUID firstRecordID = recordIDs.remove( 0 );
+        int sourcePortIndex = recordSource.remove( firstRecordID );
 
         // Output of record
         outputPort.consume( firstRecord );
@@ -350,8 +398,8 @@ public class MultiplexerTask extends AbstractTask
           Record record = inputPort.getRecordQueue( ).take( );
           if( !record.equals( Record.END_OF_DATA ) )
             {
-            orderedRecords.add( record );
-            recordSource.put( record, sourcePortIndex );
+            UUID recordID = this.insertOrderedRecord( orderedRecords, recordIDs, record, recordComparator );
+            recordSource.put( recordID, sourcePortIndex );
             }
           }
         catch( InterruptedException exc )
@@ -362,40 +410,6 @@ public class MultiplexerTask extends AbstractTask
         }
 
       outputPort.consume( Record.END_OF_DATA );
-      }
-    }
-
-  /**
-   * @author jgonzalez
-   */
-  private static class RecordComparator implements Comparator<Record>
-    {
-    private List<String> key = new ArrayList<String>( );
-
-    /**
-     * 
-     */
-    public RecordComparator( List<String> key )
-      {
-      this.key = key;
-      }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.util.Comparator#compare(T, T)
-     */
-    public int compare( Record firstRecord, Record secondRecord )
-      {
-      // TODO Auto-generated method stub
-      if( this.key == null || this.key.isEmpty( ) )
-        {
-        return firstRecord.compareTo( secondRecord );
-        }
-      else
-        {
-        return firstRecord.extract( this.key ).compareTo( secondRecord.extract( this.key ) );
-        }
       }
     }
   }
