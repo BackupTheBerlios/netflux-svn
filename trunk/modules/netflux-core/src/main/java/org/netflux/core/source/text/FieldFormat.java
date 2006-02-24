@@ -21,6 +21,8 @@
  */
 package org.netflux.core.source.text;
 
+import java.sql.Types;
+
 // TODO: Improve javadocs
 /**
  * A description of a piece of data contained in a delimited text file.
@@ -29,12 +31,12 @@ package org.netflux.core.source.text;
  */
 public class FieldFormat
   {
-  private String  name;
-  private int     type;
-  private int     precision;
-  private int     scale;
+  private String  name      = "undefined";
+  private int     type      = Types.VARCHAR;
+  private int     precision = 256;
+  private int     scale     = 0;
   private String  format;
-  private boolean nullable;
+  private boolean nullable  = true;
   private boolean turningErrorsToNull;
 
   /**
