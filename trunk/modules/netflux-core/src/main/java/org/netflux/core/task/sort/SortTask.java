@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import org.netflux.core.Channel;
@@ -44,11 +45,17 @@ import org.netflux.core.task.util.RecordComparator;
  */
 public class SortTask extends AbstractTask
   {
+  public enum Ordering
+    {
+    ASCENDING, DESCENDING
+    }
+
   private static final Set<String> INPUT_PORT_NAMES    = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES   = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
   private List<String>             partiallyOrderedKey = new ArrayList<String>( );
   private List<String>             key                 = new ArrayList<String>( );
+  private SortTask.Ordering        ordering            = SortTask.Ordering.ASCENDING;
   private int                      bufferSize          = Integer.MAX_VALUE;
 
   /**
@@ -89,6 +96,22 @@ public class SortTask extends AbstractTask
   public void setKey( List<String> key )
     {
     this.key = key;
+    }
+
+  /**
+   * @return
+   */
+  public SortTask.Ordering getOrdering( )
+    {
+    return ordering;
+    }
+
+  /**
+   * @param ordering
+   */
+  public void setOrdering( SortTask.Ordering ordering )
+    {
+    this.ordering = ordering;
     }
 
   /**
@@ -203,7 +226,19 @@ public class SortTask extends AbstractTask
           // TODO: Show a warning???
           if( buffer.size( ) >= SortTask.this.getBufferSize( ) )
             {
-            Record firstRecord = buffer.remove( 0 );
+            Record firstRecord;
+            switch( SortTask.this.getOrdering( ) )
+              {
+              case DESCENDING:
+                firstRecord = buffer.remove( buffer.size( ) - 1 );
+                break;
+
+              case ASCENDING:
+              default:
+                // Ascending order as default case
+                firstRecord = buffer.remove( 0 );
+                break;
+              }
             outputPort.consume( firstRecord );
             }
 
@@ -223,11 +258,27 @@ public class SortTask extends AbstractTask
 
     protected void outputAndClearBuffer( Channel outputPort, List<Record> buffer )
       {
-      Iterator<Record> bufferIterator = buffer.iterator( );
-      while( bufferIterator.hasNext( ) )
+      switch( SortTask.this.getOrdering( ) )
         {
-        outputPort.consume( bufferIterator.next( ) );
+        case DESCENDING:
+          ListIterator<Record> descendingBufferIterator = buffer.listIterator( buffer.size( ) );
+          while( descendingBufferIterator.hasPrevious( ) )
+            {
+            outputPort.consume( descendingBufferIterator.previous( ) );
+            }
+          break;
+
+        case ASCENDING:
+        default:
+          // Ascending order as default case
+          Iterator<Record> ascendingBufferIterator = buffer.iterator( );
+          while( ascendingBufferIterator.hasNext( ) )
+            {
+            outputPort.consume( ascendingBufferIterator.next( ) );
+            }
+          break;
         }
+
       buffer.clear( );
       }
     }
