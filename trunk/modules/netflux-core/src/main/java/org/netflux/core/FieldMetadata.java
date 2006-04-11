@@ -23,6 +23,11 @@ package org.netflux.core;
 
 import java.io.Serializable;
 import java.sql.Types;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 // TODO: Improve Javadoc documentation when precision, scale and nullable get really used in the framework
 /**
@@ -48,13 +53,15 @@ import java.sql.Types;
  */
 public class FieldMetadata implements Serializable, Cloneable
   {
-  private static final long serialVersionUID = 3920443747044944958L;
+  private static final long     serialVersionUID = 3920443747044944958L;
+  private static Log            log              = LogFactory.getLog( FieldMetadata.class );
+  private static ResourceBundle messages         = ResourceBundle.getBundle( FieldMetadata.class.getName( ) );
 
-  private String            name             = "undefined";
-  private int               type             = Types.VARCHAR;
-  private int               precision        = 256;
-  private int               scale            = 0;
-  private boolean           nullable         = true;
+  private String                name             = "undefined";
+  private int                   type             = Types.VARCHAR;
+  private int                   precision        = 256;
+  private int                   scale            = 0;
+  private boolean               nullable         = true;
 
   /**
    * Creates a default <code>FieldMetadata</code>. The created object will have the literal <code>undefined</code> as
@@ -102,10 +109,18 @@ public class FieldMetadata implements Serializable, Cloneable
     {
     if( name == null )
       {
+      if( FieldMetadata.log.isInfoEnabled( ) )
+        {
+        FieldMetadata.log.info( FieldMetadata.messages.getString( "exception.null.name" ) );
+        }
       throw new NullPointerException( );
       }
     else if( name.trim( ).equals( "" ) )
       {
+      if( FieldMetadata.log.isInfoEnabled( ) )
+        {
+        FieldMetadata.log.info( FieldMetadata.messages.getString( "exception.empty.name" ) );
+        }
       throw new IllegalArgumentException( );
       }
     else
@@ -152,6 +167,10 @@ public class FieldMetadata implements Serializable, Cloneable
         this.type = type;
         break;
       default:
+        if( FieldMetadata.log.isInfoEnabled( ) )
+          {
+          FieldMetadata.log.info( FieldMetadata.messages.getString( "exception.unsupported.type" ) );
+          }
         throw new IllegalArgumentException( );
       }
     }
@@ -181,6 +200,10 @@ public class FieldMetadata implements Serializable, Cloneable
       }
     else
       {
+      if( FieldMetadata.log.isInfoEnabled( ) )
+        {
+        FieldMetadata.log.info( FieldMetadata.messages.getString( "exception.negative.precision" ) );
+        }
       throw new IllegalArgumentException( );
       }
     }
@@ -210,8 +233,13 @@ public class FieldMetadata implements Serializable, Cloneable
       }
     else
       {
-      throw new IllegalArgumentException( "Scale [" + scale + "] must be a value between 0 and precision [" + this.getPrecision( )
-          + "]" );
+      String errorMessage = MessageFormat.format( FieldMetadata.messages.getString( "message.invalid.scale" ), scale, this
+          .getPrecision( ) );
+      if( FieldMetadata.log.isInfoEnabled( ) )
+        {
+        FieldMetadata.log.info( FieldMetadata.messages.getString( "exception.invalid.scale" ) + errorMessage );
+        }
+      throw new IllegalArgumentException( errorMessage );
       }
     }
 
@@ -258,9 +286,10 @@ public class FieldMetadata implements Serializable, Cloneable
     if( object instanceof FieldMetadata )
       {
       FieldMetadata fieldMetadata = (FieldMetadata) object;
-      return (this.name == null) ? fieldMetadata.name == null : this.name.equals( fieldMetadata.name )
-          && this.type == fieldMetadata.type && this.scale == fieldMetadata.scale && this.precision == fieldMetadata.precision
-          && this.nullable == fieldMetadata.nullable;
+      return this == fieldMetadata
+          || ((this.name == null) ? fieldMetadata.name == null : this.name.equals( fieldMetadata.name )
+              && this.type == fieldMetadata.type && this.scale == fieldMetadata.scale && this.precision == fieldMetadata.precision
+              && this.nullable == fieldMetadata.nullable);
       }
     else
       {
@@ -294,7 +323,7 @@ public class FieldMetadata implements Serializable, Cloneable
       }
     catch( CloneNotSupportedException exc )
       {
-      exc.printStackTrace( );
+      FieldMetadata.log.fatal( FieldMetadata.messages.getString( "error.clone.not.supported" ), exc );
       throw new InternalError( );
       }
     }

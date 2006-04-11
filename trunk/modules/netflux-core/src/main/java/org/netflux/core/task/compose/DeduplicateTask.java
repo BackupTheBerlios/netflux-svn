@@ -27,12 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 
 // TODO: Error handling
@@ -123,7 +123,7 @@ public class DeduplicateTask extends AbstractTask
     public void run( )
       {
       InputPort inputPort = DeduplicateTask.this.inputPorts.get( "input" );
-      Channel outputPort = DeduplicateTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = DeduplicateTask.this.outputPorts.get( "output" );
       List<String> key = DeduplicateTask.this.getKey( );
 
       Record lastRecord = null;

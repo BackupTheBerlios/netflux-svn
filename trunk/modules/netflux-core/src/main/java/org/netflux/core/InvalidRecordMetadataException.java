@@ -21,6 +21,9 @@
  */
 package org.netflux.core;
 
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+
 /**
  * Thrown to indicate that a method has been passed a record with a metadata different than expected.
  * 
@@ -28,10 +31,11 @@ package org.netflux.core;
  */
 public class InvalidRecordMetadataException extends IllegalArgumentException
   {
-  private static final long serialVersionUID = -805534418627047765L;
+  private static final long     serialVersionUID = -805534418627047765L;
+  private static ResourceBundle messages         = ResourceBundle.getBundle( InvalidRecordMetadataException.class.getName( ) );
 
-  private Record            record;
-  private RecordMetadata    expectedMetadata;
+  private Record                record;
+  private RecordMetadata        expectedMetadata;
 
   /**
    * Constructs a <code>InvalidRecordMetadataException</code> with the specified offending <code>record</code> and expected
@@ -42,8 +46,8 @@ public class InvalidRecordMetadataException extends IllegalArgumentException
    */
   public InvalidRecordMetadataException( Record record, RecordMetadata expectedMetadata )
     {
-    super( "Record metadata " + record.getMetadata( ).toString( ) + " didn't fit in with expected metadata "
-        + expectedMetadata.toString( ) + " while processing record " + record.toString( ) );
+    super( MessageFormat.format( InvalidRecordMetadataException.messages.getString( "message.invalid.metadata" ), record.getMetadata( )
+        .toString( ), expectedMetadata.toString( ), record.toString( ) ) );
     this.record = record;
     this.expectedMetadata = expectedMetadata;
     }

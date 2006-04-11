@@ -25,12 +25,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 
 /**
@@ -128,8 +128,8 @@ public class FilterTask extends AbstractTask
     public void run( )
       {
       InputPort inputPort = FilterTask.this.inputPorts.get( "input" );
-      Channel acceptedPort = FilterTask.this.outputPorts.get( "accepted" );
-      Channel rejectedPort = FilterTask.this.outputPorts.get( "rejected" );
+      OutputPort acceptedPort = FilterTask.this.outputPorts.get( "accepted" );
+      OutputPort rejectedPort = FilterTask.this.outputPorts.get( "rejected" );
       try
         {
         Record record = inputPort.getRecordQueue( ).take( );

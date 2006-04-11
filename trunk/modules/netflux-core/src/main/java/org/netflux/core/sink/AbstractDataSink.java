@@ -24,10 +24,11 @@ package org.netflux.core.sink;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.netflux.core.DataSink;
-import org.netflux.core.InputPort;
 import org.netflux.core.RecordSink;
+import org.netflux.core.flow.InputPort;
 import org.netflux.core.flow.SimpleInputPort;
 
 /**
@@ -39,6 +40,7 @@ import org.netflux.core.flow.SimpleInputPort;
 public abstract class AbstractDataSink implements DataSink
   {
   protected Map<String, InputPort> inputPorts = new HashMap<String, InputPort>( );
+  private String                   name;
 
   /**
    * Creates a data sink with a set of input ports named after <code>inputPortNames</code>.
@@ -47,9 +49,34 @@ public abstract class AbstractDataSink implements DataSink
    */
   protected AbstractDataSink( Set<String> inputPortNames )
     {
+    this( "DataSink|" + UUID.randomUUID( ).toString( ), inputPortNames );
+    }
+
+  protected AbstractDataSink( String name, Set<String> inputPortNames )
+    {
+    this.name = name;
     for( String inputPortName : inputPortNames )
       {
-      this.inputPorts.put( inputPortName, new SimpleInputPort( ) );
+      this.inputPorts.put( inputPortName, new SimpleInputPort( this.name + ":" + inputPortName ) );
+      }
+    }
+
+  public String getName( )
+    {
+    return this.name;
+    }
+
+  /**
+   * Sets the name of this data sink.
+   * 
+   * @param name the new name of the data sink
+   */
+  public void setName( String name )
+    {
+    this.name = name;
+    for( Map.Entry<String, InputPort> inputPortEntry : this.inputPorts.entrySet( ) )
+      {
+      inputPortEntry.getValue( ).setName( this.getName( ) + ":" + inputPortEntry.getKey( ) );
       }
     }
 

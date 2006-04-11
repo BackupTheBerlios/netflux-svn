@@ -22,6 +22,7 @@
 package org.netflux.core;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,10 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.ResourceBundle;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A description of the data that may be held in a {@link Record}. This can be conceptually seen as a list of {@link FieldMetadata}
@@ -39,6 +44,8 @@ import java.util.ListIterator;
 public class RecordMetadata implements Serializable, Cloneable
   {
   private static final long              serialVersionUID = -1433565348464531285L;
+  private static Log                     log              = LogFactory.getLog( RecordMetadata.class );
+  private static ResourceBundle          messages         = ResourceBundle.getBundle( RecordMetadata.class.getName( ) );
 
   private ArrayList<FieldMetadata>       fieldMetadata;
   private LinkedHashMap<String, Integer> fieldIndexes;
@@ -113,7 +120,12 @@ public class RecordMetadata implements Serializable, Cloneable
     else
       {
       // There are duplicated field names
-      throw new IllegalArgumentException( "Duplicated field names not allowed in field metadata" );
+      String errorMessage = RecordMetadata.messages.getString( "message.duplicated.names" );
+      if( RecordMetadata.log.isInfoEnabled( ) )
+        {
+        RecordMetadata.log.info( RecordMetadata.messages.getString( "exception.duplicated.names" ) + errorMessage );
+        }
+      throw new IllegalArgumentException( errorMessage );
       }
     }
 
@@ -168,7 +180,12 @@ public class RecordMetadata implements Serializable, Cloneable
       }
     else
       {
-      throw new NoSuchFieldNameException( "Field metadata not found with name " + fieldName );
+      String errorMessage = MessageFormat.format( RecordMetadata.messages.getString( "message.invalid.name" ), fieldName );
+      if( RecordMetadata.log.isInfoEnabled( ) )
+        {
+        RecordMetadata.log.info( RecordMetadata.messages.getString( "exception.invalid.name" ) + errorMessage );
+        }
+      throw new NoSuchFieldNameException( errorMessage );
       }
     }
 
@@ -288,7 +305,8 @@ public class RecordMetadata implements Serializable, Cloneable
   @Override
   public boolean equals( Object object )
     {
-    return object instanceof RecordMetadata && this.fieldMetadata.equals( ((RecordMetadata) object).fieldMetadata );
+    return this == object
+        || (object instanceof RecordMetadata && this.fieldMetadata.equals( ((RecordMetadata) object).fieldMetadata ));
     }
 
   /**
@@ -318,9 +336,9 @@ public class RecordMetadata implements Serializable, Cloneable
       clonedRecordMetadata.fieldIndexes = (LinkedHashMap<String, Integer>) this.fieldIndexes.clone( );
       return clonedRecordMetadata;
       }
-    catch( CloneNotSupportedException e )
+    catch( CloneNotSupportedException exc )
       {
-      e.printStackTrace( );
+      RecordMetadata.log.fatal( RecordMetadata.messages.getString( "error.clone.not.supported" ), exc );
       throw new InternalError( );
       }
     }

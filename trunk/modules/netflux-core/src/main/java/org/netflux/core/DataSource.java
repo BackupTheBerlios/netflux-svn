@@ -47,6 +47,20 @@ import java.util.Set;
 public interface DataSource
   {
   /**
+   * Returns the name of this data source.
+   * 
+   * @return the name of this data source.
+   */
+  public String getName( );
+
+  /**
+   * Sets the name of this data source.
+   * 
+   * @param name the name of this data source.
+   */
+  public void setName( String name );
+
+  /**
    * Returns the set of names of the output ports of this data sink. The returned set may be unmodifiable to prevent external
    * manipulation.
    * 

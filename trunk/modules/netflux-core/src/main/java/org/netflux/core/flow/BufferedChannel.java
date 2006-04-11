@@ -21,9 +21,13 @@
  */
 package org.netflux.core.flow;
 
+import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.InvalidRecordMetadataException;
 import org.netflux.core.Record;
 
@@ -34,6 +38,9 @@ import org.netflux.core.Record;
  */
 public class BufferedChannel extends SimpleChannel
   {
+  private static Log            log      = LogFactory.getLog( BufferedChannel.class );
+  private static ResourceBundle messages = ResourceBundle.getBundle( BufferedChannel.class.getName( ) );
+
   private BlockingQueue<Record> buffer;
   private NotifierThread        notifier;
 
@@ -42,6 +49,17 @@ public class BufferedChannel extends SimpleChannel
    */
   public BufferedChannel( )
     {
+    this( "BufferedChannel|" + UUID.randomUUID( ) );
+    }
+
+  /**
+   * Creates a new <code>BufferedChannel</code> with the specified <code>name</code>.
+   * 
+   * @param name the name of the buffered channel
+   */
+  public BufferedChannel( String name )
+    {
+    super( name );
     this.buffer = new LinkedBlockingQueue<Record>( );
     this.notifier = new BufferedChannel.NotifierThread( );
     this.notifier.start( );
@@ -54,9 +72,29 @@ public class BufferedChannel extends SimpleChannel
    */
   public BufferedChannel( int capacity )
     {
+    this( "BufferedChannel|" + UUID.randomUUID( ), capacity );
+    }
+
+  /**
+   * Creates a new <code>BufferedChannel</code> with the specified <code>name</code> and initial <code>capacity</code> in its
+   * internal queue.
+   * 
+   * @param name the name of the buffered channel
+   * @param capacity the initial capacity of the internal queue.
+   */
+  public BufferedChannel( String name, int capacity )
+    {
+    super( name );
     this.buffer = new LinkedBlockingQueue<Record>( capacity );
     this.notifier = new BufferedChannel.NotifierThread( );
     this.notifier.start( );
+    }
+
+  @Override
+  public void setName( String name )
+    {
+    super.setName( name );
+    this.notifier.setName( name );
     }
 
   /**
@@ -70,18 +108,22 @@ public class BufferedChannel extends SimpleChannel
       {
       try
         {
+        if( BufferedChannel.log.isTraceEnabled( ) ) BufferedChannel.log.trace( "Storing record in internal queue: " + record );
         this.buffer.put( record );
         }
       catch( InterruptedException exc )
         {
-        // TODO: log exception
-        exc.printStackTrace( );
+        BufferedChannel.log.debug( "Interrupted while putting record in queue", exc );
         this.notifier.errorDetected = true;
         this.notifier.interrupt( );
         }
       }
     else
       {
+      if( BufferedChannel.log.isInfoEnabled( ) )
+        {
+        BufferedChannel.log.info( BufferedChannel.messages.getString( "exception.invalid.metadata" ) );
+        }
       throw new InvalidRecordMetadataException( record, this.getMetadata( ) );
       }
     }
@@ -95,28 +137,34 @@ public class BufferedChannel extends SimpleChannel
     {
     private boolean errorDetected = false;
 
+    public NotifierThread( )
+      {
+      super( BufferedChannel.this.getName( ) );
+      }
+
     // TODO: This is a very naive implementation of this stuff
     @Override
     public void run( )
       {
       try
         {
+        BufferedChannel.log.debug( "Starting record processing" );
+
         Record record = BufferedChannel.this.buffer.take( );
-        while( !record.equals( Record.END_OF_DATA ) && !this.errorDetected );
+        while( !record.equals( Record.END_OF_DATA ) && !this.errorDetected )
           {
+          if( BufferedChannel.log.isTraceEnabled( ) ) BufferedChannel.log.trace( "Record retrieved from internal queue: " + record );
           BufferedChannel.super.consume( record );
           record = BufferedChannel.this.buffer.take( );
           }
         }
       catch( InterruptedException exc )
         {
-        // TODO: log exception
+        BufferedChannel.log.debug( "Interrupted while consuming record in queue", exc );
         }
 
-      if( this.errorDetected )
-        {
-        BufferedChannel.super.consume( Record.END_OF_DATA );
-        }
+      BufferedChannel.super.consume( Record.END_OF_DATA );
+      BufferedChannel.log.debug( "Finished record processing" );
       }
     }
   }

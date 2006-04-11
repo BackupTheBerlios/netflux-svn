@@ -19,82 +19,41 @@
  *   
  * $Id$
  */
-package org.netflux.core;
+package org.netflux.core.flow;
 
 import java.beans.PropertyChangeListener;
-import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+
+import org.netflux.core.Record;
+import org.netflux.core.RecordMetadata;
+import org.netflux.core.RecordSink;
 
 /**
  * <p>
- * An object that acts as a source of {@link Record}s. The records may be read from some physical storage, transformed from some input
- * records or generated in some other way. All the records coming out from a <code>RecordSource</code> must share the same metadata,
- * that we can retrieve using the provided method. There is only one exception to this rule: we may use the special
- * {@link Record#END_OF_DATA} record to notify all the registered sinks that there is no more available data from this source.
+ * Internal view of an input port for use in <code>DataSink</code>s and <code>Task</code>s.
  * </p>
  * <p>
- * The only way to get data from a <code>RecordSource</code> is to provide a {@link RecordSink} to be registered in the list of sinks
- * of this source. Every time a new record is available, this source will provide such record to all the registered sinks using the
- * appropiate method of the <code>RecordSink</code> interface.
+ * <b>NOTE:</b> This class is an internal implementation detail. This has sense only for people writing <code>DataSink</code>s or
+ * <code>Task</code>s and inheriting from <code>AbstractDataSink</code> or <code>AbstractTask</code>.
  * </p>
  * 
- * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
+ * @author jgonzalez
  */
-public interface RecordSource
+public interface InputPort extends RecordSink
   {
   /**
-   * Returns the name of this record source.
+   * Returns the metadata associated with this input port.
    * 
-   * @return the name of this record source.
-   */
-  public String getName( );
-
-  /**
-   * Sets the name of this record source.
-   * 
-   * @param name the name of this record source.
-   */
-  public void setName( String name );
-
-  /**
-   * Returns the metadata associated with this record source. All the records coming out of this source will have this same metadata.
-   * 
-   * @return the metadata associated with this record source.
+   * @return the metadata associated with this input port.
    */
   public RecordMetadata getMetadata( );
 
   /**
-   * Adds a record sink that will be able to read all the records coming out from this source.
+   * Returns the queue where all the records to be processed are stored.
    * 
-   * @param recordSink the record sink receiving records from this source.
-   * @throws NullPointerException if the provided <code>recordSink</code> is <code>null</code>.
+   * @return the queue with records to be processed.
    */
-  public void addRecordSink( RecordSink recordSink );
-
-  /**
-   * Removes a record sink from the list of registered sinks of this record source. The sink will receive no more records coming out
-   * from this source.
-   * 
-   * @param recordSink the record sink to be removed.
-   */
-  public void removeRecordSink( RecordSink recordSink );
-
-  /**
-   * Sets the set of record sinks that will be able to read all the records coming out from this source. Any previously registered
-   * sinks will be unregistered, so the set provided will become the effective set of registered sinks.
-   * 
-   * @param recordSinks the set of record sinks receiving records from this source.
-   * @throws NullPointerException if the provided <code>recordSinks</code> parameter is <code>null</code>.
-   */
-  public void setRecordSinks( Set<RecordSink> recordSinks );
-
-  /**
-   * Sets the record sink that will be able to read all the records coming out from this source. Any previously registered sinks will
-   * be unregistered, so the record sink provided will become the only registered sink.
-   * 
-   * @param recordSink the record sink receiving records from this source.
-   * @throws NullPointerException if the provided <code>recordSink</code> parameter is <code>null</code>.
-   */
-  public void setRecordSink( RecordSink recordSink );
+  public BlockingQueue<Record> getRecordQueue( );
 
   /**
    * Add a <code>PropertyChangeListener</code> to the listener list. The listener is registered for all properties. The same listener

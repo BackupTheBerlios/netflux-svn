@@ -34,12 +34,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 import org.netflux.core.task.util.RecordComparator;
 
@@ -251,7 +251,7 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
-      Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
       List<Integer> availablePorts = new LinkedList<Integer>( );
       for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
         {
@@ -302,7 +302,7 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
-      Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
       for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
         {
         InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
@@ -354,7 +354,7 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
-      Channel outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
       List<Record> orderedRecords = new ArrayList<Record>( );
       List<UUID> recordIDs = new ArrayList<UUID>( );
       Comparator<Record> recordComparator = new RecordComparator( MultiplexerTask.this.getKey( ) );

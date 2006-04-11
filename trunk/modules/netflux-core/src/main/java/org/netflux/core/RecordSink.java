@@ -21,8 +21,6 @@
  */
 package org.netflux.core;
 
-import java.beans.PropertyChangeListener;
-
 /**
  * <p>
  * An object that acts as a sink of {@link Record}s. The records may be stored in some physical storage, transformed into some output
@@ -40,31 +38,37 @@ import java.beans.PropertyChangeListener;
 public interface RecordSink
   {
   /**
-   * Add a <code>PropertyChangeListener</code> to the listener list. The listener is registered for all properties. The same listener
-   * object may be added more than once, and will be called as many times as it is added. If <code>listener</code> is
-   * <code>null</code>, no exception is thrown and no action is taken.
+   * Returns the name of this record sink.
    * 
-   * @param listener the <code>PropertyChangeListener</code> to be added.
+   * @return the name of this record sink.
    */
-  public void addPropertyChangeListener( PropertyChangeListener listener );
+  public String getName( );
 
   /**
-   * Remove a <code>PropertyChangeListener</code> from the listener list. If <code>listener</code> was added more than once to the
-   * same event source, it will be notified one less time after being removed. If <code>listener</code> is <code>null</code>, or
-   * was never added, no exception is thrown and no action is taken.
+   * Sets the name of this record sink.
    * 
-   * @param listener the <code>PropertyChangeListener</code> to be removed.
+   * @param name the name of this record sink.
    */
-  public void removePropertyChangeListener( PropertyChangeListener listener );
+  public void setName( String name );
 
   /**
-   * Sets the metadata associated with this record sink. Once this metadata has been assigned, all the records provided to this record
-   * sink must comply with the metadata provided.
+   * Gets the record source that is currently providing records to this record sink. If no record source has been registered, this
+   * method returns <code>null</code>.
    * 
-   * @param metadata the metadata associated with this record sink.
+   * @return the record source currently providing records to this record sink, <code>null</code> if none available.
    */
-  public void setMetadata( RecordMetadata metadata );
+  public RecordSource getRecordSource( );
 
+  /**
+   * Sets the record source that will provide records to this record sink. Once this record source has been assigned, all the records
+   * provided to this record sink must comply with the metadata associated with the record source.
+   * 
+   * @param recordSource the record source that will provide records to this record sink, <code>null</code> if the record source is
+   *          being detached from this record sink.
+   */
+  public void setRecordSource( RecordSource recordSource );
+
+  // TODO: Throw an exception if no record source has been assigned
   /**
    * Invoked by the record source this sink is registered in to indicate that a new record is available. This data sink should process
    * the <code>record</code> without modifying it, as the same <code>record</code> will have been handed to every sink registered

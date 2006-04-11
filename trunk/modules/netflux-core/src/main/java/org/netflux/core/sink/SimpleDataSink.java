@@ -25,9 +25,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.netflux.core.InputPort;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Record;
 import org.netflux.core.RecordSink;
+import org.netflux.core.flow.InputPort;
 
 /**
  * <p>
@@ -54,6 +56,7 @@ import org.netflux.core.RecordSink;
  */
 public class SimpleDataSink extends AbstractDataSink
   {
+  private static Log               log              = LogFactory.getLog( SimpleDataSink.class );
   private static final Set<String> INPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
 
   private TargetDataStorage        targetDataStorage;
@@ -66,6 +69,13 @@ public class SimpleDataSink extends AbstractDataSink
     {
     super( SimpleDataSink.INPUT_PORT_NAMES );
     this.worker = new TargetDataStorageWorker( );
+    }
+
+  @Override
+  public void setName( String name )
+    {
+    super.setName( name );
+    this.worker.setName( name );
     }
 
   /**
@@ -103,20 +113,27 @@ public class SimpleDataSink extends AbstractDataSink
     {
     public TargetDataStorageWorker( )
       {
-      // TODO Auto-generated constructor stub
-      super( "TargetDataStorageWorker" );
+      super( SimpleDataSink.this.getName( ) );
       }
 
     @Override
     public void run( )
       {
+      SimpleDataSink.log.debug( "Starting record processing" );
+
       InputPort inputPort = SimpleDataSink.this.inputPorts.get( "input" );
       try
         {
+        SimpleDataSink.log.trace( "Getting next record from input port" );
         Record record = inputPort.getRecordQueue( ).take( );
         while( !record.equals( Record.END_OF_DATA ) )
           {
+          if( SimpleDataSink.log.isTraceEnabled( ) )
+            SimpleDataSink.log.trace( "Outputting record to target data storage: " + record );
+
           SimpleDataSink.this.targetDataStorage.storeRecord( record );
+
+          SimpleDataSink.log.trace( "Getting next record from input port" );
           record = inputPort.getRecordQueue( ).take( );
           }
         }
@@ -133,6 +150,7 @@ public class SimpleDataSink extends AbstractDataSink
       finally
         {
         SimpleDataSink.this.targetDataStorage.close( );
+        SimpleDataSink.log.debug( "Finished record processing" );
         }
       }
     }

@@ -28,10 +28,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 
 /**
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
@@ -112,7 +112,7 @@ public class DiscriminatedCombineTask extends CombineTask
     public void run( )
       {
       InputPort inputPort = DiscriminatedCombineTask.this.inputPorts.get( "input" );
-      Channel outputPort = DiscriminatedCombineTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = DiscriminatedCombineTask.this.outputPorts.get( "output" );
       List<String> groupingKeyFieldNames = DiscriminatedCombineTask.this.groupingKeyFieldNames;
 
       try

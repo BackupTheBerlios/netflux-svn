@@ -23,12 +23,18 @@ package org.netflux.core.flow;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ResourceBundle;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.netflux.core.InputPort;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.netflux.core.InvalidRecordMetadataException;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
+import org.netflux.core.RecordSource;
+import org.netflux.core.util.RecordSinkSupport;
 
 /**
  * Simple implementation of an <code>InputPort</code> using a blocking queue to store records waiting to be processed.
@@ -37,8 +43,11 @@ import org.netflux.core.RecordMetadata;
  */
 public class SimpleInputPort implements InputPort
   {
+  private static Log              log                   = LogFactory.getLog( SimpleInputPort.class );
+  private static ResourceBundle   messages              = ResourceBundle.getBundle( SimpleInputPort.class.getName( ) );
+
   protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
-  private RecordMetadata          metadata;
+  protected RecordSinkSupport     recordSinkSupport;
   private BlockingQueue<Record>   buffer;
 
   /**
@@ -46,6 +55,17 @@ public class SimpleInputPort implements InputPort
    */
   public SimpleInputPort( )
     {
+    this( "InputPort|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new <code>SimpleInputPort</code> with the specified <code>name</code>.
+   * 
+   * @param name the name of the port
+   */
+  public SimpleInputPort( String name )
+    {
+    this.recordSinkSupport = new RecordSinkSupport( name, this, this.propertyChangeSupport );
     this.buffer = new LinkedBlockingQueue<Record>( );
     }
 
@@ -56,30 +76,40 @@ public class SimpleInputPort implements InputPort
    */
   public SimpleInputPort( int capacity )
     {
-    this.buffer = new LinkedBlockingQueue<Record>( capacity );
+    this( UUID.randomUUID( ).toString( ), capacity );
     }
 
   /**
-   * This method puts the specified <code>record</code> in the internal queue, waiting to be processed.
+   * Creates a new <code>SimpleInputPort</code> with the specified <code>name</code> and initial <code>capacity</code> in its
+   * internal queue.
+   * 
+   * @param name the name of the port
+   * @param capacity the initial capacity of the internal queue.
    */
-  public void consume( Record record )
+  public SimpleInputPort( String name, int capacity )
     {
-    if( record.getMetadata( ).equals( this.metadata ) || record.equals( Record.END_OF_DATA ) )
-      {
-      try
-        {
-        this.buffer.put( record );
-        }
-      catch( InterruptedException exc )
-        {
-        // TODO Auto-generated catch block
-        exc.printStackTrace( );
-        }
-      }
-    else
-      {
-      throw new IllegalArgumentException( );
-      }
+    this.recordSinkSupport = new RecordSinkSupport( name, this, this.propertyChangeSupport );
+    this.buffer = new LinkedBlockingQueue<Record>( capacity );
+    }
+
+  public String getName( )
+    {
+    return this.recordSinkSupport.getName( );
+    }
+
+  public void setName( String name )
+    {
+    this.recordSinkSupport.setName( name );
+    }
+
+  public RecordSource getRecordSource( )
+    {
+    return this.recordSinkSupport.getRecordSource( );
+    }
+
+  public void setRecordSource( RecordSource recordSource )
+    {
+    this.recordSinkSupport.setRecordSource( recordSource );
     }
 
   public BlockingQueue<Record> getRecordQueue( )
@@ -89,14 +119,35 @@ public class SimpleInputPort implements InputPort
 
   public RecordMetadata getMetadata( )
     {
-    return this.metadata;
+    return this.recordSinkSupport.getMetadata( );
     }
 
-  public void setMetadata( RecordMetadata metadata )
+  /**
+   * This method puts the specified <code>record</code> in the internal queue, waiting to be processed.
+   */
+  public void consume( Record record )
     {
-    RecordMetadata oldMetadata = this.metadata;
-    this.metadata = metadata;
-    this.propertyChangeSupport.firePropertyChange( "metadata", oldMetadata, this.metadata );
+    if( record.getMetadata( ).equals( this.getMetadata( ) ) || record.equals( Record.END_OF_DATA ) )
+      {
+      try
+        {
+        if( SimpleInputPort.log.isTraceEnabled( ) )
+          SimpleInputPort.log.trace( "Storing record in internal queue: " + record );
+        this.buffer.put( record );
+        }
+      catch( InterruptedException exc )
+        {
+        SimpleInputPort.log.debug( "Interrupted while putting record in queue", exc );
+        }
+      }
+    else
+      {
+      if( SimpleInputPort.log.isInfoEnabled( ) )
+        {
+        SimpleInputPort.log.info( SimpleInputPort.messages.getString( "exception.invalid.metadata" ) );
+        }
+      throw new InvalidRecordMetadataException( record, this.getMetadata( ) );
+      }
     }
 
   public void addPropertyChangeListener( PropertyChangeListener listener )
@@ -104,8 +155,18 @@ public class SimpleInputPort implements InputPort
     this.propertyChangeSupport.addPropertyChangeListener( listener );
     }
 
+  public void addPropertyChangeListener( String propertyName, PropertyChangeListener listener )
+    {
+    this.propertyChangeSupport.addPropertyChangeListener( propertyName, listener );
+    }
+
   public void removePropertyChangeListener( PropertyChangeListener listener )
     {
     this.propertyChangeSupport.removePropertyChangeListener( listener );
+    }
+
+  public void removePropertyChangeListener( String propertyName, PropertyChangeListener listener )
+    {
+    this.propertyChangeSupport.removePropertyChangeListener( propertyName, listener );
     }
   }

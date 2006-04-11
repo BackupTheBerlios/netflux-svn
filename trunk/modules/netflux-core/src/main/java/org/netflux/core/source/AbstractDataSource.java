@@ -24,11 +24,12 @@ package org.netflux.core.source;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import org.netflux.core.Channel;
 import org.netflux.core.DataSource;
 import org.netflux.core.RecordSource;
-import org.netflux.core.flow.SimpleChannel;
+import org.netflux.core.flow.OutputPort;
+import org.netflux.core.flow.SimpleOutputPort;
 
 /**
  * Abstract basic implementation of <code>DataSource</code>. This class provides basic support for creation and management of output
@@ -39,7 +40,8 @@ import org.netflux.core.flow.SimpleChannel;
  */
 public abstract class AbstractDataSource implements DataSource
   {
-  protected Map<String, Channel> outputPorts = new HashMap<String, Channel>( );
+  protected Map<String, OutputPort> outputPorts = new HashMap<String, OutputPort>( );
+  private String                    name;
 
   /**
    * Creates a data source with a set of output ports named after <code>outputPortNames</code>.
@@ -48,9 +50,34 @@ public abstract class AbstractDataSource implements DataSource
    */
   protected AbstractDataSource( Set<String> outputPortNames )
     {
+    this( "DataSource|" + UUID.randomUUID( ).toString( ), outputPortNames );
+    }
+
+  protected AbstractDataSource( String name, Set<String> outputPortNames )
+    {
+    this.name = name;
     for( String outputPortName : outputPortNames )
       {
-      this.outputPorts.put( outputPortName, new SimpleChannel( ) );
+      this.outputPorts.put( outputPortName, new SimpleOutputPort( ) );
+      }
+    }
+
+  public String getName( )
+    {
+    return this.name;
+    }
+
+  /**
+   * Sets the name of this data sink.
+   * 
+   * @param name the new name of the data sink
+   */
+  public void setName( String name )
+    {
+    this.name = name;
+    for( Map.Entry<String, OutputPort> outputPortEntry : this.outputPorts.entrySet( ) )
+      {
+      outputPortEntry.getValue( ).setName( this.getName( ) + ":" + outputPortEntry.getKey( ) );
       }
     }
 

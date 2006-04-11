@@ -27,26 +27,34 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
 import org.netflux.core.Task;
-import org.netflux.core.flow.SimpleChannel;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.flow.SimpleInputPort;
+import org.netflux.core.flow.SimpleOutputPort;
 
 /**
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public abstract class AbstractTask implements Task
   {
-  protected Map<String, InputPort> inputPorts  = new HashMap<String, InputPort>( );
-  protected Map<String, Channel>   outputPorts = new HashMap<String, Channel>( );
+  protected Map<String, InputPort>  inputPorts  = new HashMap<String, InputPort>( );
+  protected Map<String, OutputPort> outputPorts = new HashMap<String, OutputPort>( );
+  private String                    name;
 
   protected AbstractTask( Set<String> inputPortNames, Set<String> outputPortNames )
     {
+    this( "Task|" + UUID.randomUUID( ).toString( ), inputPortNames, outputPortNames );
+    }
+
+  protected AbstractTask( String name, Set<String> inputPortNames, Set<String> outputPortNames )
+    {
+    this.name = name;
     Iterator<String> inputPortNamesIterator = inputPortNames.iterator( );
     while( inputPortNamesIterator.hasNext( ) )
       {
@@ -66,7 +74,30 @@ public abstract class AbstractTask implements Task
     while( outputPortNamesIterator.hasNext( ) )
       {
       String outputPortName = outputPortNamesIterator.next( );
-      this.outputPorts.put( outputPortName, new SimpleChannel( ) );
+      this.outputPorts.put( outputPortName, new SimpleOutputPort( ) );
+      }
+    }
+
+  public String getName( )
+    {
+    return this.name;
+    }
+
+  /**
+   * Sets the name of this task.
+   * 
+   * @param name the new name of the task
+   */
+  public void setName( String name )
+    {
+    this.name = name;
+    for( Map.Entry<String, InputPort> inputPortEntry : this.inputPorts.entrySet( ) )
+      {
+      inputPortEntry.getValue( ).setName( this.getName( ) + ":" + inputPortEntry.getKey( ) );
+      }
+    for( Map.Entry<String, OutputPort> outputPortEntry : this.outputPorts.entrySet( ) )
+      {
+      outputPortEntry.getValue( ).setName( this.getName( ) + ":" + outputPortEntry.getKey( ) );
       }
     }
 
@@ -140,7 +171,10 @@ public abstract class AbstractTask implements Task
   public void start( )
     {
     // TODO: Thread handling
-    this.getTaskWorker( ).start( );
+    // FIXME: Catch exceptions thrown from the thread (using join? how?) and send END_OF_DATA to all active output ports
+    Thread taskWorker = this.getTaskWorker( );
+    taskWorker.setName( this.getName( ) );
+    taskWorker.start( );
     }
 
   /**
@@ -149,7 +183,7 @@ public abstract class AbstractTask implements Task
    */
   protected void updateMetadata( InputPort inputPort, RecordMetadata newMetadata )
     {
-    for( Map.Entry<String, Channel> outputPortEntry : this.outputPorts.entrySet( ) )
+    for( Map.Entry<String, OutputPort> outputPortEntry : this.outputPorts.entrySet( ) )
       {
       outputPortEntry.getValue( ).setMetadata( this.computeMetadata( outputPortEntry.getKey( ), inputPort, newMetadata ) );
       }

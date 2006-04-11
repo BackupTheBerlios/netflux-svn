@@ -31,12 +31,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.netflux.core.Channel;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 import org.netflux.core.task.util.RecordComparator;
 
@@ -183,7 +183,7 @@ public class SortTask extends AbstractTask
     public void run( )
       {
       InputPort inputPort = SortTask.this.inputPorts.get( "input" );
-      Channel outputPort = SortTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = SortTask.this.outputPorts.get( "output" );
       List<Record> buffer = new ArrayList<Record>( );
       Comparator<Record> recordComparator = new RecordComparator( SortTask.this.getKey( ) );
       Record lastKey = null;
@@ -256,7 +256,7 @@ public class SortTask extends AbstractTask
         }
       }
 
-    protected void outputAndClearBuffer( Channel outputPort, List<Record> buffer )
+    protected void outputAndClearBuffer( OutputPort outputPort, List<Record> buffer )
       {
       switch( SortTask.this.getOrdering( ) )
         {

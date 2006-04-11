@@ -22,12 +22,17 @@
 package org.netflux.core;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.ResourceBundle;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
@@ -52,6 +57,8 @@ import java.util.ListIterator;
 public class Record implements Comparable<Record>, Serializable, Cloneable
   {
   private static final long                   serialVersionUID = -5058506696243955825L;
+  private static Log                          log              = LogFactory.getLog( Record.class );
+  private static ResourceBundle               messages         = ResourceBundle.getBundle( Record.class.getName( ) );
 
   /**
    * Constant record used to signal end of data in a communication.
@@ -121,7 +128,12 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       }
     else
       {
-      throw new NoSuchFieldNameException( "No field named " + fieldName );
+      String errorMessage = MessageFormat.format( Record.messages.getString( "message.invalid.name" ), fieldName );
+      if( Record.log.isInfoEnabled( ) )
+        {
+        Record.log.info( Record.messages.getString( "exception.invalid.name" ) + errorMessage );
+        }
+      throw new NoSuchFieldNameException( errorMessage );
       }
     }
 
@@ -149,7 +161,12 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       }
     else
       {
-      throw new NoSuchFieldNameException( "No field named " + fieldName );
+      String errorMessage = MessageFormat.format( Record.messages.getString( "message.invalid.name" ), fieldName );
+      if( Record.log.isInfoEnabled( ) )
+        {
+        Record.log.info( Record.messages.getString( "exception.invalid.name" ) + errorMessage );
+        }
+      throw new NoSuchFieldNameException( errorMessage );
       }
     }
 
@@ -213,7 +230,12 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       }
     else
       {
-      throw new NoSuchFieldNameException( "No field named " + fieldName );
+      String errorMessage = MessageFormat.format( Record.messages.getString( "message.invalid.name" ), fieldName );
+      if( Record.log.isInfoEnabled( ) )
+        {
+        Record.log.info( Record.messages.getString( "exception.invalid.name" ) + errorMessage );
+        }
+      throw new NoSuchFieldNameException( errorMessage );
       }
     }
 
@@ -241,7 +263,12 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       }
     else
       {
-      throw new NoSuchFieldNameException( "No field named " + fieldName );
+      String errorMessage = MessageFormat.format( Record.messages.getString( "message.invalid.name" ), fieldName );
+      if( Record.log.isInfoEnabled( ) )
+        {
+        Record.log.info( Record.messages.getString( "exception.invalid.name" ) + errorMessage );
+        }
+      throw new NoSuchFieldNameException( errorMessage );
       }
     }
 
@@ -356,7 +383,9 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
   @Override
   public boolean equals( Object object )
     {
-    return object instanceof Record && this.metadata.equals( ((Record) object).metadata ) && this.data.equals( ((Record) object).data );
+    return this == object
+        || (object instanceof Record && this.metadata.equals( ((Record) object).metadata ) && this.data
+            .equals( ((Record) object).data ));
     }
 
   /**
@@ -388,7 +417,7 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       }
     catch( CloneNotSupportedException exc )
       {
-      exc.printStackTrace( );
+      Record.log.fatal( Record.messages.getString( "error.clone.not.supported" ), exc );
       throw new InternalError( );
       }
     }
@@ -440,6 +469,7 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
     int result = 0;
     if( this.getMetadata( ).equals( record.getMetadata( ) ) )
       {
+      // TODO: Improve this a bit: shortcut in case this == record
       for( int fieldIndex = 0; fieldIndex < this.data.size( ) && result == 0; fieldIndex++ )
         {
         Object currentValue = this.data.get( fieldIndex ).getValue( );
@@ -453,14 +483,26 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
           }
         else
           {
-          throw new ClassCastException( "Non comparable data while comparing records" );
+          String errorMessage = MessageFormat.format( Record.messages.getString( "message.noncomparable.data" ), currentValue,
+              currentValue.getClass( ), this );
+          if( Record.log.isInfoEnabled( ) )
+            {
+            Record.log.info( Record.messages.getString( "exception.comparing.records" ) + errorMessage );
+            }
+          throw new ClassCastException( errorMessage );
           }
         }
       return result;
       }
     else
       {
-      throw new ClassCastException( "Incompatible metadata while comparing records" );
+      String errorMessage = MessageFormat.format( Record.messages.getString( "message.incompatible.metadata" ), this.getMetadata( ),
+          record.getMetadata( ) );
+      if( Record.log.isInfoEnabled( ) )
+        {
+        Record.log.info( Record.messages.getString( "exception.comparing.records" ) + errorMessage );
+        }
+      throw new ClassCastException( errorMessage );
       }
     }
   }

@@ -28,11 +28,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.netflux.core.Channel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.OutputPort;
 
 // TODO: Rethink if a error output port is suitable. Maybe this could be better solved using logging, as you shouldn't expect to
 // process or recover error records.
@@ -73,6 +75,7 @@ import org.netflux.core.RecordSource;
  */
 public class SimpleDataSource extends AbstractDataSource
   {
+  private static Log               log               = LogFactory.getLog( SimpleDataSource.class );
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output", "error"} ) );
 
   private SourceDataStorage        sourceDataStorage;
@@ -98,7 +101,7 @@ public class SimpleDataSource extends AbstractDataSource
 
   /**
    * Sets the source data storage where this data source will be reading records from.
-   *  
+   * 
    * @param sourceDataStorage the source data storage with records to read.
    */
   public void setSourceDataStorage( SourceDataStorage sourceDataStorage )
@@ -117,6 +120,11 @@ public class SimpleDataSource extends AbstractDataSource
   public void start( )
     {
     // TODO: Manage threads
+    // TODO: i18n
+    // FIXME: Catch exceptions thrown from the thread (using join? how?) and send END_OF_DATA to all active output ports
+    // Create the secondary threads in a custom ThreadGroup. Subclass ThreadGroup and override public void uncaughtException(Thread
+    // source, Throwable throwable). This method would then be notified when an uncaught exception is thrown.
+    SimpleDataSource.log.info( this.getName( ) + " data source starting" );
     new SourceDataStorageWorker( ).start( );
     }
 
@@ -144,8 +152,7 @@ public class SimpleDataSource extends AbstractDataSource
     {
     public SourceDataStorageWorker( )
       {
-      // TODO: Create a UNIQUE name... maybe tasks should have a name property?
-      super( "SourceDataStorageWorker" );
+      super( SimpleDataSource.this.getName( ) );
       }
 
     /*
@@ -156,8 +163,8 @@ public class SimpleDataSource extends AbstractDataSource
     @Override
     public void run( )
       {
-      Channel outputPort = SimpleDataSource.this.outputPorts.get( "output" );
-      Channel errorPort = SimpleDataSource.this.outputPorts.get( "error" );
+      OutputPort outputPort = SimpleDataSource.this.outputPorts.get( "output" );
+      OutputPort errorPort = SimpleDataSource.this.outputPorts.get( "error" );
       SourceDataStorage storage = SimpleDataSource.this.getSourceDataStorage( );
 
       Record record = null;
@@ -168,7 +175,10 @@ public class SimpleDataSource extends AbstractDataSource
         try
           {
           recordNumber++;
+          SimpleDataSource.log.trace( "Getting next record from source data storage" );
           record = SimpleDataSource.this.getSourceDataStorage( ).nextRecord( );
+          if( SimpleDataSource.log.isTraceEnabled( ) )
+            SimpleDataSource.log.trace( "Outputting record: " + record );
           outputPort.consume( record );
           }
         catch( SourceDataStorageException exc )

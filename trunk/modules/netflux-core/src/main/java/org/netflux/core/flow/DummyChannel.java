@@ -23,9 +23,11 @@ package org.netflux.core.flow;
 
 import java.beans.PropertyChangeListener;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Record;
-import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
+import org.netflux.core.RecordSource;
 
 /**
  * A <code>RecordSink</code> that simply discards all the records that receives.
@@ -34,11 +36,39 @@ import org.netflux.core.RecordSink;
  */
 public class DummyChannel implements RecordSink
   {
-  public void setMetadata( RecordMetadata metadata )
-    {}
+  private static Log   log = LogFactory.getLog( DummyChannel.class );
 
-  public void consume( Record object )
-    {}
+  private String       name;
+  private RecordSource recordSource;
+
+  public String getName( )
+    {
+    return this.name;
+    }
+
+  public void setName( String name )
+    {
+    this.name = name;
+    }
+
+  public void setRecordSource( RecordSource recordSource )
+    {
+    DummyChannel.log.debug( "Setting record source of dummy channel" );
+    this.recordSource = recordSource;
+    }
+
+  public RecordSource getRecordSource( )
+    {
+    return this.recordSource;
+    }
+
+  public void consume( Record record )
+    {
+    if( DummyChannel.log.isTraceEnabled( ) )
+      {
+      DummyChannel.log.trace( "Discarding record in dummy channel: " + record );
+      }
+    }
 
   public void addPropertyChangeListener( PropertyChangeListener listener )
     {}

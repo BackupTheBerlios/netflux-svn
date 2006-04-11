@@ -30,13 +30,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.netflux.core.Channel;
 import org.netflux.core.FieldMetadata;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 
 // TODO: Error handling
@@ -194,7 +194,7 @@ public class SplitTask extends AbstractTask
     public void run( )
       {
       InputPort inputPort = SplitTask.this.inputPorts.get( "input" );
-      Channel outputPort = SplitTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = SplitTask.this.outputPorts.get( "output" );
       try
         {
         Record record = inputPort.getRecordQueue( ).take( );

@@ -71,7 +71,7 @@ public class Field<T extends Serializable> implements Serializable
     if( object instanceof Field )
       {
       Field field = (Field) object;
-      return (this.value == null) ? field.value == null : this.value.equals( field.value );
+      return this == field || ((this.value == null) ? field.value == null : this.value.equals( field.value ));
       }
     else
       {

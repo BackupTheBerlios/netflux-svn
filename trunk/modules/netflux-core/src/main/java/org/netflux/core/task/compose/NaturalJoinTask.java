@@ -29,13 +29,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.netflux.core.Channel;
 import org.netflux.core.FieldMetadata;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 
 // TODO: Error handling
@@ -169,7 +169,7 @@ public class NaturalJoinTask extends AbstractTask
       {
       InputPort leftInputPort = NaturalJoinTask.this.inputPorts.get( "leftInput" );
       InputPort rightInputPort = NaturalJoinTask.this.inputPorts.get( "rightInput" );
-      Channel outputPort = NaturalJoinTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = NaturalJoinTask.this.outputPorts.get( "output" );
 
       // Precomputed for speed
       RecordMetadata rightMetadataWithoutKey = rightInputPort.getMetadata( ).supress( NaturalJoinTask.this.joinKeyFieldNames );

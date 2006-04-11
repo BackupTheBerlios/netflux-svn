@@ -42,6 +42,20 @@ import java.util.Set;
 public interface DataSink
   {
   /**
+   * Returns the name of this data sink.
+   * 
+   * @return the name of this data sink.
+   */
+  public String getName( );
+
+  /**
+   * Sets the name of this data sink.
+   * 
+   * @param name the name of this data sink.
+   */
+  public void setName( String name );
+
+  /**
    * Returns the set of names of the input ports of this data sink. The returned set may be unmodifiable to prevent external
    * manipulation.
    * 

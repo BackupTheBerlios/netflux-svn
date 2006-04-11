@@ -49,7 +49,6 @@ public class RecordComparator implements Comparator<Record>
    */
   public int compare( Record firstRecord, Record secondRecord )
     {
-    // TODO Auto-generated method stub
     if( this.key == null || this.key.isEmpty( ) )
       {
       return firstRecord.compareTo( secondRecord );

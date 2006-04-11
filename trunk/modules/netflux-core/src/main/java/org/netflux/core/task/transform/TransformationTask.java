@@ -28,13 +28,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.netflux.core.Channel;
 import org.netflux.core.FieldMetadata;
-import org.netflux.core.InputPort;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
 import org.netflux.core.RecordSource;
+import org.netflux.core.flow.InputPort;
+import org.netflux.core.flow.OutputPort;
 import org.netflux.core.task.AbstractTask;
 
 /**
@@ -134,7 +134,7 @@ public class TransformationTask extends AbstractTask
     public void run( )
       {
       InputPort inputPort = TransformationTask.this.inputPorts.get( "input" );
-      Channel outputPort = TransformationTask.this.outputPorts.get( "output" );
+      OutputPort outputPort = TransformationTask.this.outputPorts.get( "output" );
       try
         {
         Record record = inputPort.getRecordQueue( ).take( );

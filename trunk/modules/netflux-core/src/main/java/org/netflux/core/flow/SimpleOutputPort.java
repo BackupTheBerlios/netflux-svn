@@ -29,67 +29,52 @@ import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.netflux.core.Channel;
 import org.netflux.core.InvalidRecordMetadataException;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
-import org.netflux.core.RecordSource;
-import org.netflux.core.util.RecordSinkSupport;
 import org.netflux.core.util.RecordSourceSupport;
 
 /**
- * A simple channel that directly forwards the records to process to the registered record sinks.
+ * A simple output port that directly forwards the records to process to the registered record sinks.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public class SimpleChannel implements Channel
+public class SimpleOutputPort implements OutputPort
   {
-  private static Log              log                   = LogFactory.getLog( SimpleChannel.class );
-  private static ResourceBundle   messages              = ResourceBundle.getBundle( SimpleChannel.class.getName( ) );
+  private static Log              log                   = LogFactory.getLog( SimpleOutputPort.class );
+  private static ResourceBundle   messages              = ResourceBundle.getBundle( SimpleOutputPort.class.getName( ) );
 
   protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport( this );
   protected RecordSourceSupport   recordSourceSupport;
-  protected RecordSinkSupport     recordSinkSupport;
+  private RecordMetadata          metadata;
 
   /**
-   * Creates a new <code>SimpleChannel</code>.
+   * Creates a new <code>SimpleOutputPort</code>.
    */
-  public SimpleChannel( )
+  public SimpleOutputPort( )
     {
-    this( "Channel|" + UUID.randomUUID( ) );
+    this( "OutputPort|" + UUID.randomUUID( ).toString( ) );
     }
 
   /**
-   * Creates a new <code>SimpleChannel</code> with the specified <code>name</code>.
+   * Creates a new <code>SimpleOutputPort</code> with the specified <code>name</code>.
    * 
-   * @param name the name of the channel
+   * @param name the name of the port
    */
-  public SimpleChannel( String name )
+  public SimpleOutputPort( String name )
     {
     this.recordSourceSupport = new RecordSourceSupport( name, this, this.propertyChangeSupport );
-    this.recordSinkSupport = new RecordSinkSupport( name, this, this.propertyChangeSupport );
     }
 
   public String getName( )
     {
-    return this.recordSinkSupport.getName( );
+    return this.recordSourceSupport.getName( );
     }
 
   public void setName( String name )
     {
-    this.recordSinkSupport.setName( name );
     this.recordSourceSupport.setName( name );
-    }
-
-  public RecordSource getRecordSource( )
-    {
-    return this.recordSinkSupport.getRecordSource( );
-    }
-
-  public void setRecordSource( RecordSource recordSource )
-    {
-    this.recordSinkSupport.setRecordSource( recordSource );
     }
 
   public void addRecordSink( RecordSink recordSink )
@@ -114,7 +99,14 @@ public class SimpleChannel implements Channel
 
   public RecordMetadata getMetadata( )
     {
-    return this.recordSinkSupport.getMetadata( );
+    return this.metadata;
+    }
+
+  public void setMetadata( RecordMetadata metadata )
+    {
+    RecordMetadata oldMetadata = this.metadata;
+    this.metadata = metadata;
+    this.propertyChangeSupport.firePropertyChange( "metadata", oldMetadata, this.metadata );
     }
 
   /**
@@ -127,16 +119,16 @@ public class SimpleChannel implements Channel
       {
       for( RecordSink recordSink : this.recordSourceSupport.getRecordSinks( ) )
         {
-        if( SimpleChannel.log.isTraceEnabled( ) )
-          SimpleChannel.log.trace( "Providing record to " + recordSink.getName( ) + " -> " + record );
+        if( SimpleOutputPort.log.isTraceEnabled( ) )
+          SimpleOutputPort.log.trace( "Providing record to " + recordSink.getName( ) + " -> " + record );
         recordSink.consume( record );
         }
       }
     else
       {
-      if( SimpleChannel.log.isInfoEnabled( ) )
+      if( SimpleOutputPort.log.isInfoEnabled( ) )
         {
-        SimpleChannel.log.info( SimpleChannel.messages.getString( "exception.invalid.metadata" ) );
+        SimpleOutputPort.log.info( SimpleOutputPort.messages.getString( "exception.invalid.metadata" ) );
         }
       throw new InvalidRecordMetadataException( record, this.getMetadata( ) );
       }
