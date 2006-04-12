@@ -61,7 +61,7 @@ public abstract class AbstractTask implements Task
       String inputPortName = inputPortNamesIterator.next( );
       InputPort currentInputPort = new SimpleInputPort( );
       this.inputPorts.put( inputPortName, currentInputPort );
-      currentInputPort.addPropertyChangeListener( new PropertyChangeListener( )
+      currentInputPort.addPropertyChangeListener( "metadata", new PropertyChangeListener( )
         {
           public void propertyChange( PropertyChangeEvent event )
             {
