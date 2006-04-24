@@ -86,7 +86,7 @@
     </plugins>
   </build>
   <modules>
-    <module>modules/netflux-core</module>
+    <module>netflux-core</module>
   </modules>
   <reporting>
     <plugins>
