@@ -176,7 +176,7 @@ public class LookupTransformation implements Transformation
     Serializable valueToTransform = record.getValue( Serializable.class, this.inputFieldName );
     Map<?, ? extends Serializable> lookupTable = this.getLookupTableFactory( ).getLookupTable( );
 
-    if( valueToTransform != null && lookupTable.containsKey( valueToTransform ) )
+    if( lookupTable.containsKey( valueToTransform ) )
       {
       Serializable transformedValue = lookupTable.get( valueToTransform );
       transformedRecord.setValue( this.outputFieldMetadata.getName( ), transformedValue );
