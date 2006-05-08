@@ -160,11 +160,18 @@ public class RegexPatternLookupFactory implements LookupTableFactory
      */
     public boolean containsKey( Object key )
       {
-      for( Pattern pattern : this.patternMap.keySet( ) )
+      if( key == null )
         {
-        if( pattern.matcher( key.toString( ) ).matches( ) ) { return true; }
+        return this.patternMap.containsKey( null );
         }
-      return false;
+      else
+        {
+        for( Pattern pattern : this.patternMap.keySet( ) )
+          {
+          if( pattern.matcher( key.toString( ) ).matches( ) ) { return true; }
+          }
+        return false;
+        }
       }
 
     /*
@@ -184,11 +191,18 @@ public class RegexPatternLookupFactory implements LookupTableFactory
      */
     public V get( Object key )
       {
-      for( Pattern pattern : this.patternMap.keySet( ) )
+      if( key == null )
         {
-        if( pattern.matcher( key.toString( ) ).matches( ) ) { return this.patternMap.get( pattern ); }
+        return this.patternMap.get( null );
         }
-      return null;
+      else
+        {
+        for( Pattern pattern : this.patternMap.keySet( ) )
+          {
+          if( pattern.matcher( key.toString( ) ).matches( ) ) { return this.patternMap.get( pattern ); }
+          }
+        return null;
+        }
       }
 
     /*
@@ -241,7 +255,14 @@ public class RegexPatternLookupFactory implements LookupTableFactory
       Set<String> keySet = new LinkedHashSet<String>( );
       for( Pattern pattern : this.patternMap.keySet( ) )
         {
-        keySet.add( pattern.pattern( ) );
+        if( pattern == null )
+          {
+          keySet.add( null );
+          }
+        else
+          {
+          keySet.add( pattern.pattern( ) );
+          }
         }
       return keySet;
       }
@@ -266,7 +287,14 @@ public class RegexPatternLookupFactory implements LookupTableFactory
       Set<Map.Entry<String, V>> entrySet = new LinkedHashSet<Map.Entry<String, V>>( );
       for( Map.Entry<Pattern, V> entry : this.patternMap.entrySet( ) )
         {
-        entrySet.add( new Entry( entry.getKey( ).pattern( ), entry.getValue( ) ) );
+        if( entry.getKey( ) == null )
+          {
+          entrySet.add( new Entry( null, entry.getValue( ) ) );
+          }
+        else
+          {
+          entrySet.add( new Entry( entry.getKey( ).pattern( ), entry.getValue( ) ) );
+          }
         }
       return entrySet;
       }
