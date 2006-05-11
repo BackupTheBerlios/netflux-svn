@@ -225,20 +225,24 @@ public class DatabaseLookupFactory implements LookupTableFactory
 
       case Types.SMALLINT:
       case Types.INTEGER:
-        return resultSet.getInt( columnName );
+        int intValue = resultSet.getInt( columnName );
+        return resultSet.wasNull( ) ? null : intValue;
 
       case Types.BIGINT:
       case Types.DECIMAL:
         return resultSet.getBigDecimal( columnName );
 
       case Types.FLOAT:
-        return resultSet.getFloat( columnName );
+        float floatValue = resultSet.getFloat( columnName );
+        return resultSet.wasNull( ) ? null : floatValue;
 
       case Types.DOUBLE:
-        return resultSet.getDouble( columnName );
+        double doubleValue = resultSet.getDouble( columnName );
+        return resultSet.wasNull( ) ? null : doubleValue;
 
       case Types.BOOLEAN:
-        return resultSet.getBoolean( columnName );
+        boolean booleanValue = resultSet.getBoolean( columnName );
+        return resultSet.wasNull( ) ? null : booleanValue;
 
       default:
         // An exception here!!!!!!!
