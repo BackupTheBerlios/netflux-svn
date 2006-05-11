@@ -124,7 +124,14 @@ public class RegexPatternLookupFactory implements LookupTableFactory
           {
           String stringPattern = stringPatternIterator.next( );
           V value = valueIterator.next( );
-          this.patternMap.put( Pattern.compile( stringPattern, flags ), value );
+          if( stringPattern != null )
+            {
+            this.patternMap.put( Pattern.compile( stringPattern, flags ), value );
+            }
+          else
+            {
+            this.patternMap.put( null, value );
+            }
           }
         }
       else
