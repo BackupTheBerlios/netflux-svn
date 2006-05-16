@@ -341,7 +341,7 @@ public class FieldMetadata implements Serializable, Cloneable
 
     metadataString.append( this.getName( ) );
     metadataString.append( ',' );
-    metadataString.append( this.getType( ) );
+    metadataString.append( FieldMetadata.typeToString( this.getType( ) ) );
     metadataString.append( ',' );
     metadataString.append( this.getPrecision( ) );
     metadataString.append( ',' );
@@ -354,5 +354,110 @@ public class FieldMetadata implements Serializable, Cloneable
 
     metadataString.append( '}' );
     return metadataString.toString( );
+    }
+
+  /**
+   * Returns a string representation of the provided type.
+   * 
+   * @param type the type from {@link Types} to transform to a string.
+   * @return a string representation of the provided type.
+   */
+  public static String typeToString( int type )
+    {
+    switch( type )
+      {
+      case Types.ARRAY:
+        return "ARRAY";
+
+      case Types.BIGINT:
+        return "BIGINT";
+
+      case Types.BINARY:
+        return "BINARY";
+
+      case Types.BIT:
+        return "BIT";
+
+      case Types.BLOB:
+        return "BLOB";
+
+      case Types.BOOLEAN:
+        return "BOOLEAN";
+
+      case Types.CHAR:
+        return "CHAR";
+
+      case Types.CLOB:
+        return "CLOB";
+
+      case Types.DATALINK:
+        return "DATALINK";
+
+      case Types.DATE:
+        return "DATE";
+
+      case Types.DECIMAL:
+        return "DECIMAL";
+
+      case Types.DISTINCT:
+        return "DISTINCT";
+
+      case Types.DOUBLE:
+        return "DOUBLE";
+
+      case Types.FLOAT:
+        return "FLOAT";
+
+      case Types.INTEGER:
+        return "INTEGER";
+
+      case Types.JAVA_OBJECT:
+        return "JAVA_OBJECT";
+
+      case Types.LONGVARBINARY:
+        return "LONGVARBINARY";
+
+      case Types.LONGVARCHAR:
+        return "LONGVARCHAR";
+
+      case Types.NULL:
+        return "NULL";
+
+      case Types.NUMERIC:
+        return "NUMERIC";
+
+      case Types.OTHER:
+        return "OTHER";
+
+      case Types.REAL:
+        return "REAL";
+
+      case Types.REF:
+        return "REF";
+
+      case Types.SMALLINT:
+        return "SMALLINT";
+
+      case Types.STRUCT:
+        return "STRUCT";
+
+      case Types.TIME:
+        return "TIME";
+
+      case Types.TIMESTAMP:
+        return "TIMESTAMP";
+
+      case Types.TINYINT:
+        return "TINYINT";
+
+      case Types.VARBINARY:
+        return "VARBINARY";
+
+      case Types.VARCHAR:
+        return "VARCHAR";
+
+      default:
+        return "*unsupported type*";
+      }
     }
   }
