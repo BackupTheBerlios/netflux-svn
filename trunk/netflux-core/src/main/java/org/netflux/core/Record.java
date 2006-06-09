@@ -473,13 +473,14 @@ public class Record implements Comparable<Record>, Serializable, Cloneable
       for( int fieldIndex = 0; fieldIndex < this.data.size( ) && result == 0; fieldIndex++ )
         {
         Object currentValue = this.data.get( fieldIndex ).getValue( );
-        if( currentValue == null )
+        Object currentOtherValue = record.data.get( fieldIndex ).getValue( );
+        if( currentValue == null || currentOtherValue == null )
           {
-          result = (record.data.get( fieldIndex ).getValue( ) == null) ? 0 : -1;
+          result = (currentValue == currentOtherValue) ? 0 : ((currentValue == null) ? -1 : 1);
           }
         else if( currentValue instanceof Comparable )
           {
-          result = ((Comparable<Object>) currentValue).compareTo( record.data.get( fieldIndex ).getValue( ) );
+          result = ((Comparable<Object>) currentValue).compareTo( currentOtherValue );
           }
         else
           {
