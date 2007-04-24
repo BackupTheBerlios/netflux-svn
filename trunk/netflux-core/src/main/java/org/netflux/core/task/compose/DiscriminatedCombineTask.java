@@ -22,12 +22,16 @@
 package org.netflux.core.task.compose;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.flow.InputPort;
@@ -38,8 +42,29 @@ import org.netflux.core.flow.OutputPort;
  */
 public class DiscriminatedCombineTask extends CombineTask
   {
-  protected String       discriminatorFieldName;
-  protected List<Object> discriminatorValues = new LinkedList<Object>( );
+  private static Log            log                 = LogFactory.getLog( DiscriminatedCombineTask.class );
+  private static ResourceBundle messages            = ResourceBundle.getBundle( DiscriminatedCombineTask.class.getName( ) );
+
+  protected String              discriminatorFieldName;
+  protected List<Object>        discriminatorValues = new LinkedList<Object>( );
+
+  /**
+   * Creates a new discriminated combine task.
+   */
+  public DiscriminatedCombineTask( )
+    {
+    super( );
+    }
+
+  /**
+   * Creates a new discriminated combine task with the provided name.
+   * 
+   * @param name the name of the new discriminated combine task.
+   */
+  public DiscriminatedCombineTask( String name )
+    {
+    super( name );
+    }
 
   /**
    * @return Returns the discriminatorFieldName.
@@ -111,6 +136,12 @@ public class DiscriminatedCombineTask extends CombineTask
     @Override
     public void run( )
       {
+      if( DiscriminatedCombineTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = DiscriminatedCombineTask.messages.getString( "message.task.started" );
+        DiscriminatedCombineTask.log.info( MessageFormat.format( startedMessage, DiscriminatedCombineTask.this.getName( ) ) );
+        }
+
       InputPort inputPort = DiscriminatedCombineTask.this.inputPorts.get( "input" );
       OutputPort outputPort = DiscriminatedCombineTask.this.outputPorts.get( "output" );
       List<String> groupingKeyFieldNames = DiscriminatedCombineTask.this.groupingKeyFieldNames;
@@ -129,6 +160,11 @@ public class DiscriminatedCombineTask extends CombineTask
             {
             if( currentOutputRecord != null )
               {
+              if( DiscriminatedCombineTask.log.isTraceEnabled( ) )
+                {
+                DiscriminatedCombineTask.log.trace( "Outputting combined record: " + currentOutputRecord );
+                }
+
               outputPort.consume( currentOutputRecord );
               }
 
@@ -136,6 +172,11 @@ public class DiscriminatedCombineTask extends CombineTask
             currentOutputRecord.setFields( record.extract( groupingKeyFieldNames ) );
 
             lastKey = record.extract( groupingKeyFieldNames );
+            }
+
+          if( DiscriminatedCombineTask.log.isTraceEnabled( ) )
+            {
+            DiscriminatedCombineTask.log.trace( "Combining record into current record: " + record );
             }
 
           Object discriminatorValue = record.getValue( Serializable.class, DiscriminatedCombineTask.this.getDiscriminatorFieldName( ) );
@@ -154,14 +195,27 @@ public class DiscriminatedCombineTask extends CombineTask
 
         if( currentOutputRecord != null )
           {
+          if( DiscriminatedCombineTask.log.isTraceEnabled( ) )
+            {
+            DiscriminatedCombineTask.log.trace( "Outputting combined record: " + currentOutputRecord );
+            }
+
           outputPort.consume( currentOutputRecord );
           }
-        outputPort.consume( record );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        DiscriminatedCombineTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( DiscriminatedCombineTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = DiscriminatedCombineTask.messages.getString( "message.task.finished" );
+          DiscriminatedCombineTask.log.info( MessageFormat.format( finishedMessage, DiscriminatedCombineTask.this.getName( ) ) );
+          }
         }
       }
     }

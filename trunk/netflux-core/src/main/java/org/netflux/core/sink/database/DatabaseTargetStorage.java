@@ -105,7 +105,7 @@ public class DatabaseTargetStorage implements TargetDataStorage
       }
     catch( SQLException exc )
       {
-      throw new TargetDataStorageException( "SQL exception while trying to store record in database.", true, exc );
+      throw new TargetDataStorageException( "SQL exception while trying to store record in database: " + record, true, exc );
       }
     }
 

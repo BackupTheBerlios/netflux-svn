@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.UUID;
 
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
@@ -41,6 +42,92 @@ import org.netflux.core.task.AbstractTask;
 import org.netflux.core.task.util.RecordComparator;
 
 /**
+ * <p>
+ * A task that sorts input records. The records will be sorted according to the specified ordering, comparing the specified key. In
+ * order to compare fields of a record, the {@link org.netflux.core.Record#compareTo(Record)} method is used, so the records extracted
+ * using the supplied key must comply with the restrictions specified in that method.
+ * </p>
+ * <p>
+ * This task implements also partial sorting, this is, if the input records are already sorted using a given key, and you want to order
+ * each group of records with the same key using an additional group of fields, you may do so using a proper combination of
+ * <code>partiallyOrderedKey</code> and <code>key</code> parameters.
+ * </p>
+ * <p>
+ * This task uses an internal buffer to store records until all records have been received and sorted, but you may impose a maximum
+ * size on this buffer. Once this size has been reached, the task writes the record currently held in the first (or last) position,
+ * reads a new record and inserts it in the buffer in the correct position. This behaviour is repeated until all records have been
+ * written. In the case of partial sorting, every time a group of records with the same key has been sorted, the buffer is emptied.
+ * </p>
+ * <p>
+ * <b><i>Input ports:</b></i>
+ * </p>
+ * <table border="1" cellpadding="3" cellspacing="0"> <thead>
+ * <tr>
+ * <th>Name</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody align="left" valign="top">
+ * <tr>
+ * <td>input</td>
+ * <td>Records to be sorted.</td>
+ * </tr>
+ * </tbody> </table>
+ * <p>
+ * <b><i>Output ports:</b></i>
+ * </p>
+ * <table border="1" cellpadding="3" cellspacing="0"> <thead>
+ * <tr>
+ * <th>Name</th>
+ * <th>Metadata</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody align="left" valign="top">
+ * <tr>
+ * <td>output</td>
+ * <td>Same as input record</td>
+ * <td>Records sorted in the specified order, using the specified key.</td>
+ * </tr>
+ * </tbody> </table>
+ * <p>
+ * <b><i>Parameters:</b></i>
+ * </p>
+ * <table border="1" cellpadding="3" cellspacing="0"> <thead>
+ * <tr>
+ * <th>Name</th>
+ * <th>Type</th>
+ * <th>Default</th>
+ * <th>Description</th>
+ * </tr>
+ * </thead> <tbody align="left" valign="top">
+ * <tr>
+ * <td>partiallyOrderedKey</td>
+ * <td>{@link java.util.List}&lt;{@link java.lang.String}&gt;</td>
+ * <td>Empty list</td>
+ * <td>If this parameter is specified, the task will perform a partial sort. That is, it will assume that input records are sorted
+ * according to the key specified in this parameter, and will only sort records in groups of records that share this key. Input records
+ * must be sorted according to the specified ordering and key supplied in this parameter, otherwise this task may not function
+ * properly. If this parameter is not provided, the task will sort all the records.</td>
+ * </tr>
+ * <tr>
+ * <td>key</td>
+ * <td>{@link java.util.List}&lt;{@link java.lang.String}&gt;</td>
+ * <td>Empty list</td>
+ * <td>List of fields used to sort the records.</td>
+ * </tr>
+ * <tr>
+ * <td>ordering</td>
+ * <td>{@link SortTask.Ordering}</td>
+ * <td>{@link SortTask.Ordering#ASCENDING}</td>
+ * <td>Order of records sorted, either ascending or descending.</td>
+ * </tr>
+ * <tr>
+ * <td>bufferSize</td>
+ * <td>int</td>
+ * <td>{@link java.lang.Integer#MAX_VALUE}</td>
+ * <td>Size of the buffer used to store records while sorting them. If no value is specified, the buffer will have no size limit.</td>
+ * </tr>
+ * </tbody> </table>
+ * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class SortTask extends AbstractTask
@@ -59,11 +146,24 @@ public class SortTask extends AbstractTask
   private int                      bufferSize          = Integer.MAX_VALUE;
 
   /**
-   * 
+   * Creates a new sort task.
    */
   public SortTask( )
     {
-    super( SortTask.INPUT_PORT_NAMES, SortTask.OUTPUT_PORT_NAMES );
+    this( "SortTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new sort task with the provided name.
+   * 
+   * @param name the name of the new sort task.
+   */
+  /**
+   * 
+   */
+  public SortTask( String name )
+    {
+    super( name, SortTask.INPUT_PORT_NAMES, SortTask.OUTPUT_PORT_NAMES );
     }
 
   /**
@@ -130,55 +230,30 @@ public class SortTask extends AbstractTask
     this.bufferSize = bufferSize;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.AbstractTask#computeMetadata(java.lang.String, org.netflux.core.InputPort,
-   *      org.netflux.core.RecordMetadata)
-   */
   @Override
   protected RecordMetadata computeMetadata( String outputPortName, InputPort changedInputPort, RecordMetadata newMetadata )
     {
     return newMetadata;
     }
 
-  /**
-   * @return
-   */
   public RecordSink getInputPort( )
     {
     return this.getInputPort( "input" );
     }
 
-  /**
-   * @return
-   */
   public RecordSource getOutputPort( )
     {
     return this.getOutputPort( "output" );
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.AbstractTask#getTaskWorker()
-   */
   @Override
   protected Thread getTaskWorker( )
     {
     return new SortTaskWorker( );
     }
 
-  /**
-   * @author jgonzalez
-   */
   private class SortTaskWorker extends Thread
     {
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Thread#run()
-     */
     @Override
     public void run( )
       {
@@ -245,14 +320,16 @@ public class SortTask extends AbstractTask
           Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
-
-        this.outputAndClearBuffer( outputPort, buffer );
-        outputPort.consume( Record.END_OF_DATA );
         }
       catch( InterruptedException exc )
         {
         // TODO: handle exception
         exc.printStackTrace( );
+        }
+      finally
+        {
+        this.outputAndClearBuffer( outputPort, buffer );
+        outputPort.consume( Record.END_OF_DATA );
         }
       }
 

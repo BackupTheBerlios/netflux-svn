@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.compose;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,9 +32,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
@@ -48,9 +52,11 @@ import org.netflux.core.task.util.RecordComparator;
  */
 public class MultiplexerTask extends AbstractTask
   {
+  private static Log               log               = LogFactory.getLog( MultiplexerTask.class );
+  private static ResourceBundle    messages          = ResourceBundle.getBundle( MultiplexerTask.class.getName( ) );
+
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
-  // TODO: Implement all types, right now just sequential implemented
   public enum MultiplexerType
     {
     ROUND_ROBIN, SEQUENTIAL, ORDERED
@@ -64,7 +70,16 @@ public class MultiplexerTask extends AbstractTask
    */
   public MultiplexerTask( int numberOfInputPorts )
     {
-    this( numberOfInputPorts, MultiplexerType.SEQUENTIAL );
+    this( numberOfInputPorts, MultiplexerType.SEQUENTIAL, "MultiplexerTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * @param numberOfInputPorts
+   * @param name
+   */
+  public MultiplexerTask( int numberOfInputPorts, String name )
+    {
+    this( numberOfInputPorts, MultiplexerType.SEQUENTIAL, name );
     }
 
   /**
@@ -73,7 +88,17 @@ public class MultiplexerTask extends AbstractTask
    */
   public MultiplexerTask( int numberOfInputPorts, MultiplexerTask.MultiplexerType type )
     {
-    super( MultiplexerTask.computeInputPortNames( numberOfInputPorts ), MultiplexerTask.OUTPUT_PORT_NAMES );
+    this( numberOfInputPorts, type, "MultiplexerTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * @param numberOfInputPorts
+   * @param type
+   * @param name
+   */
+  public MultiplexerTask( int numberOfInputPorts, MultiplexerTask.MultiplexerType type, String name )
+    {
+    super( name, MultiplexerTask.computeInputPortNames( numberOfInputPorts ), MultiplexerTask.OUTPUT_PORT_NAMES );
     this.setType( type );
     }
 
@@ -251,6 +276,12 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( MultiplexerTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = MultiplexerTask.messages.getString( "message.task.started" );
+        MultiplexerTask.log.info( MessageFormat.format( startedMessage, MultiplexerTask.this.getName( ) ) );
+        }
+
       OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
       List<Integer> availablePorts = new LinkedList<Integer>( );
       for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
@@ -258,34 +289,47 @@ public class MultiplexerTask extends AbstractTask
         availablePorts.add( portIndex );
         }
 
-      while( !availablePorts.isEmpty( ) )
+      try
         {
-        Iterator<Integer> availablePortIndexIterator = availablePorts.iterator( );
-        while( availablePortIndexIterator.hasNext( ) )
+        while( !availablePorts.isEmpty( ) )
           {
-          int portIndex = availablePortIndexIterator.next( );
-          InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
-          try
+          Iterator<Integer> availablePortIndexIterator = availablePorts.iterator( );
+          while( availablePortIndexIterator.hasNext( ) )
             {
+            int portIndex = availablePortIndexIterator.next( );
+            InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
             Record record = inputPort.getRecordQueue( ).take( );
             if( !record.equals( Record.END_OF_DATA ) )
               {
+              if( MultiplexerTask.log.isTraceEnabled( ) )
+                {
+                MultiplexerTask.log.trace( "Outputting record from input port " + portIndex + ": " + record );
+                }
               outputPort.consume( record );
               Thread.yield( );
               }
             else
               {
+              MultiplexerTask.log.trace( "No more input available from port " + portIndex );
               availablePortIndexIterator.remove( );
               }
             }
-          catch( InterruptedException exc )
-            {
-            // TODO: handle exception
-            exc.printStackTrace( );
-            }
           }
         }
-      outputPort.consume( Record.END_OF_DATA );
+      catch( InterruptedException exc )
+        {
+        MultiplexerTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( MultiplexerTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = MultiplexerTask.messages.getString( "message.task.finished" );
+          MultiplexerTask.log.info( MessageFormat.format( finishedMessage, MultiplexerTask.this.getName( ) ) );
+          }
+        }
       }
     }
 
@@ -302,27 +346,46 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
-      OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
-      for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
+      if( MultiplexerTask.log.isInfoEnabled( ) )
         {
-        InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
-        try
+        String startedMessage = MultiplexerTask.messages.getString( "message.task.started" );
+        MultiplexerTask.log.info( MessageFormat.format( startedMessage, MultiplexerTask.this.getName( ) ) );
+        }
+
+      OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
+      try
+        {
+        for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
           {
+          MultiplexerTask.log.trace( "Outputting records from port " + portIndex );
+          InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
           Record record = inputPort.getRecordQueue( ).take( );
           while( !record.equals( Record.END_OF_DATA ) )
             {
+            if( MultiplexerTask.log.isTraceEnabled( ) )
+              {
+              MultiplexerTask.log.trace( "Outputting record: " + record );
+              }
             outputPort.consume( record );
             Thread.yield( );
             record = inputPort.getRecordQueue( ).take( );
             }
           }
-        catch( InterruptedException exc )
+        }
+      catch( InterruptedException exc )
+        {
+        MultiplexerTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( MultiplexerTask.log.isInfoEnabled( ) )
           {
-          // TODO: handle exception
-          exc.printStackTrace( );
+          String finishedMessage = MultiplexerTask.messages.getString( "message.task.finished" );
+          MultiplexerTask.log.info( MessageFormat.format( finishedMessage, MultiplexerTask.this.getName( ) ) );
           }
         }
-      outputPort.consume( Record.END_OF_DATA );
       }
     }
 
@@ -354,46 +417,52 @@ public class MultiplexerTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( MultiplexerTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = MultiplexerTask.messages.getString( "message.task.started" );
+        MultiplexerTask.log.info( MessageFormat.format( startedMessage, MultiplexerTask.this.getName( ) ) );
+        }
+
       OutputPort outputPort = MultiplexerTask.this.outputPorts.get( "output" );
       List<Record> orderedRecords = new ArrayList<Record>( );
       List<UUID> recordIDs = new ArrayList<UUID>( );
       Comparator<Record> recordComparator = new RecordComparator( MultiplexerTask.this.getKey( ) );
       Map<UUID, Integer> recordSource = new HashMap<UUID, Integer>( );
 
-      // Initial population of orderedRecords and recordSource
-      for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
+      try
         {
-        InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
-        try
+        // Initial population of orderedRecords and recordSource
+        for( int portIndex = 1; portIndex <= MultiplexerTask.this.getInputPorts( ).size( ); portIndex++ )
           {
+          InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + portIndex );
           Record record = inputPort.getRecordQueue( ).take( );
           if( !record.equals( Record.END_OF_DATA ) )
             {
             UUID recordID = this.insertOrderedRecord( orderedRecords, recordIDs, record, recordComparator );
             recordSource.put( recordID, portIndex );
             }
+          else
+            {
+            MultiplexerTask.log.trace( "No more input available from port " + portIndex );
+            }
           }
-        catch( InterruptedException exc )
+
+        while( !orderedRecords.isEmpty( ) )
           {
-          // TODO Auto-generated catch block
-          exc.printStackTrace( );
-          }
-        }
+          // Get first record, and the port from where we read it, and remove them
+          Record firstRecord = orderedRecords.remove( 0 );
+          UUID firstRecordID = recordIDs.remove( 0 );
+          int sourcePortIndex = recordSource.remove( firstRecordID );
 
-      while( !orderedRecords.isEmpty( ) )
-        {
-        // Get first record, and the port from where we read it, and remove them
-        Record firstRecord = orderedRecords.remove( 0 );
-        UUID firstRecordID = recordIDs.remove( 0 );
-        int sourcePortIndex = recordSource.remove( firstRecordID );
+          // Output of record
+          if( MultiplexerTask.log.isTraceEnabled( ) )
+            {
+            MultiplexerTask.log.trace( "Outputting record from input port " + sourcePortIndex + ": " + firstRecord );
+            }
+          outputPort.consume( firstRecord );
 
-        // Output of record
-        outputPort.consume( firstRecord );
-
-        // We read a new record from the port where the record originated from
-        InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + sourcePortIndex );
-        try
-          {
+          // We read a new record from the port where the record originated from
+          InputPort inputPort = MultiplexerTask.this.inputPorts.get( "input" + sourcePortIndex );
           Thread.yield( );
           Record record = inputPort.getRecordQueue( ).take( );
           if( !record.equals( Record.END_OF_DATA ) )
@@ -401,15 +470,26 @@ public class MultiplexerTask extends AbstractTask
             UUID recordID = this.insertOrderedRecord( orderedRecords, recordIDs, record, recordComparator );
             recordSource.put( recordID, sourcePortIndex );
             }
-          }
-        catch( InterruptedException exc )
-          {
-          // TODO: handle exception
-          exc.printStackTrace( );
+          else
+            {
+            MultiplexerTask.log.trace( "No more input available from port " + sourcePortIndex );
+            }
           }
         }
+      catch( InterruptedException exc )
+        {
+        MultiplexerTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
 
-      outputPort.consume( Record.END_OF_DATA );
+        if( MultiplexerTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = MultiplexerTask.messages.getString( "message.task.finished" );
+          MultiplexerTask.log.info( MessageFormat.format( finishedMessage, MultiplexerTask.this.getName( ) ) );
+          }
+        }
       }
     }
   }

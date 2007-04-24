@@ -184,6 +184,7 @@ public class SimpleDataSource extends AbstractDataSource
         catch( SourceDataStorageException exc )
           {
           // exc.printStackTrace( );
+          SimpleDataSource.log.error( "Error retrieving record", exc );
           Record errorRecord = new Record( SimpleDataSource.this.errorMetadata );
           errorRecord.setValue( "_recordNumber", recordNumber );
           errorRecord.setValue( "_message", " -- " + exc.getMessage( ) + " -- " );

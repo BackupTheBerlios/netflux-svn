@@ -21,12 +21,17 @@
  */
 package org.netflux.core.task.compose;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
 import org.netflux.core.RecordSink;
@@ -41,17 +46,30 @@ import org.netflux.core.task.AbstractTask;
  */
 public class DeduplicateTask extends AbstractTask
   {
+  private static Log               log               = LogFactory.getLog( DeduplicateTask.class );
+  private static ResourceBundle    messages          = ResourceBundle.getBundle( DeduplicateTask.class.getName( ) );
+
   private static final Set<String> INPUT_PORT_NAMES  = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
   private List<String>             key               = new ArrayList<String>( );
 
   /**
-   * 
+   * Creates a new deduplicate task.
    */
   public DeduplicateTask( )
     {
-    super( DeduplicateTask.INPUT_PORT_NAMES, DeduplicateTask.OUTPUT_PORT_NAMES );
+    this( "DeduplicateTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new deduplicate task with the provided name.
+   * 
+   * @param name the name of the new deduplicate task.
+   */
+  public DeduplicateTask( String name )
+    {
+    super( name, DeduplicateTask.INPUT_PORT_NAMES, DeduplicateTask.OUTPUT_PORT_NAMES );
     }
 
   /**
@@ -122,6 +140,12 @@ public class DeduplicateTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( DeduplicateTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = DeduplicateTask.messages.getString( "message.task.started" );
+        DeduplicateTask.log.info( MessageFormat.format( startedMessage, DeduplicateTask.this.getName( ) ) );
+        }
+
       InputPort inputPort = DeduplicateTask.this.inputPorts.get( "input" );
       OutputPort outputPort = DeduplicateTask.this.outputPorts.get( "output" );
       List<String> key = DeduplicateTask.this.getKey( );
@@ -148,20 +172,38 @@ public class DeduplicateTask extends AbstractTask
 
           if( differentRecordFound )
             {
+            if( DeduplicateTask.log.isTraceEnabled( ) )
+              {
+              DeduplicateTask.log.trace( "Outputting record: " + record );
+              }
             outputPort.consume( record );
             lastRecord = record;
+            }
+          else
+            {
+            if( DeduplicateTask.log.isTraceEnabled( ) )
+              {
+              DeduplicateTask.log.trace( "Discarding record: " + record );
+              }
             }
 
           Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
-
-        outputPort.consume( record );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        DeduplicateTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( DeduplicateTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = DeduplicateTask.messages.getString( "message.task.finished" );
+          DeduplicateTask.log.info( MessageFormat.format( finishedMessage, DeduplicateTask.this.getName( ) ) );
+          }
         }
       }
     }

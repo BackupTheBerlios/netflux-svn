@@ -21,20 +21,35 @@
  */
 package org.netflux.core.task.filter;
 
-import org.netflux.core.Record;
+import java.util.List;
 
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Abstract base class for compound filters, this is, filters that accept or reject records based on the acceptance or rejection of a
+ * list of provided filters.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public abstract class AbstractCompoundFilter implements Filter
   {
+  private List<Filter> filters;
+
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns the list of filters used to compute acceptance or rejection of records by this filter.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @return the list of filters used by this filter.
    */
-  public boolean accepts( Record record );
+  public List<Filter> getFilters( )
+    {
+    return filters;
+    }
+
+  /**
+   * Sets the list of filters used to compute acceptance or rejection of records by this filter.
+   * 
+   * @param filters the list of filters used by this filter.
+   */
+  public void setFilters( List<Filter> filters )
+    {
+    this.filters = filters;
+    }
   }

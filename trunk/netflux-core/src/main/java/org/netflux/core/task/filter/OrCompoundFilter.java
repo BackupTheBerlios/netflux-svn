@@ -24,17 +24,24 @@ package org.netflux.core.task.filter;
 import org.netflux.core.Record;
 
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Filter that accepts a record if at least one of the provided filters accept it.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public class OrCompoundFilter extends AbstractCompoundFilter
   {
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns <code>true</code> if at least on of the provided filters accept the records, <code>false</code> otherwise.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @param record the record to be accepted or rejected by this filter.
+   * @return <code>true</code> if at least on of the provided filters accept the records, <code>false</code> otherwise.
    */
-  public boolean accepts( Record record );
+  public boolean accepts( Record record )
+    {
+    for( Filter filter : this.getFilters( ) )
+      {
+      if( filter.accepts( record ) ) return true;
+      }
+    return false;
+    }
   }

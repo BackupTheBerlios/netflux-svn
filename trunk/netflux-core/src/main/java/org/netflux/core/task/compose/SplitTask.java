@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.compose;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,8 +29,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
@@ -45,6 +50,9 @@ import org.netflux.core.task.AbstractTask;
  */
 public class SplitTask extends AbstractTask
   {
+  private static Log               log                    = LogFactory.getLog( SplitTask.class );
+  private static ResourceBundle    messages               = ResourceBundle.getBundle( SplitTask.class.getName( ) );
+
   private static final Set<String> INPUT_PORT_NAMES       = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES      = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
@@ -53,11 +61,21 @@ public class SplitTask extends AbstractTask
   protected List<String>           splittedFieldNames     = new LinkedList<String>( );
 
   /**
-   * 
+   * Creates a new split task.
    */
   public SplitTask( )
     {
-    super( SplitTask.INPUT_PORT_NAMES, SplitTask.OUTPUT_PORT_NAMES );
+    this( "SplitTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new split task with the provided name.
+   * 
+   * @param name the name of the new split task.
+   */
+  public SplitTask( String name )
+    {
+    super( name, SplitTask.INPUT_PORT_NAMES, SplitTask.OUTPUT_PORT_NAMES );
     }
 
   /**
@@ -193,6 +211,12 @@ public class SplitTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( SplitTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = SplitTask.messages.getString( "message.task.started" );
+        SplitTask.log.info( MessageFormat.format( startedMessage, SplitTask.this.getName( ) ) );
+        }
+
       InputPort inputPort = SplitTask.this.inputPorts.get( "input" );
       OutputPort outputPort = SplitTask.this.outputPorts.get( "output" );
       try
@@ -200,6 +224,11 @@ public class SplitTask extends AbstractTask
         Record record = inputPort.getRecordQueue( ).take( );
         while( !record.equals( Record.END_OF_DATA ) )
           {
+          if( SplitTask.log.isTraceEnabled( ) )
+            {
+            SplitTask.log.trace( "Splitting input record: " + record );
+            }
+
           for( List<String> nameGroup : SplitTask.this.fieldNamesToSplit )
             {
             Record splittedRecord = new Record( outputPort.getMetadata( ) );
@@ -224,6 +253,11 @@ public class SplitTask extends AbstractTask
                   }
                 }
 
+              if( SplitTask.log.isTraceEnabled( ) )
+                {
+                SplitTask.log.trace( "Outputting splitted record: " + splittedRecord );
+                }
+
               outputPort.consume( splittedRecord );
               }
             }
@@ -231,13 +265,20 @@ public class SplitTask extends AbstractTask
           Thread.yield( );
           record = inputPort.getRecordQueue( ).take( );
           }
-
-        outputPort.consume( record );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        SplitTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( SplitTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = SplitTask.messages.getString( "message.task.finished" );
+          SplitTask.log.info( MessageFormat.format( finishedMessage, SplitTask.this.getName( ) ) );
+          }
         }
       }
     }

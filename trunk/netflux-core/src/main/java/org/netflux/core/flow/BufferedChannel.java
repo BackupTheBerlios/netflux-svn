@@ -148,6 +148,7 @@ public class BufferedChannel extends SimpleChannel
       {
       try
         {
+        // TODO: Change starting and finished messages to INFO level
         BufferedChannel.log.debug( "Starting record processing" );
 
         Record record = BufferedChannel.this.buffer.take( );

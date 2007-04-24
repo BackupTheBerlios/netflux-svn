@@ -22,10 +22,14 @@
 package org.netflux.core.task.transform;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
@@ -40,6 +44,9 @@ public class LookupTransformation implements Transformation
     {
     DEFAULT_VALUE, PASS_THROUGH, THROW_EXCEPTION
     }
+
+  private static Log                              log              = LogFactory.getLog( LookupTransformation.class );
+  private static ResourceBundle                   messages         = ResourceBundle.getBundle( LookupTransformation.class.getName( ) );
 
   protected String                                inputFieldName;
   protected FieldMetadata                         outputFieldMetadata;
@@ -193,7 +200,8 @@ public class LookupTransformation implements Transformation
           transformedRecord.setValue( this.outputFieldMetadata.getName( ), this.getDefaultValue( ) );
           break;
         case PASS_THROUGH:
-          if( this.inputMetadata.getFieldMetadata( this.getInputFieldName( ) ).getType( ) == this.getOutputFieldMetadata( ).getType( ) )
+          FieldMetadata intputFieldMetadata = this.inputMetadata.getFieldMetadata( this.getInputFieldName( ) );
+          if( intputFieldMetadata.getType( ) == this.getOutputFieldMetadata( ).getType( ) )
             {
             transformedRecord.setValue( this.outputFieldMetadata.getName( ), valueToTransform );
             }
@@ -201,6 +209,8 @@ public class LookupTransformation implements Transformation
             {
             // FIXME: Throw a big exception... maybe we shouldn't allow PASS_THROUGH if input and output metadata are different...
             transformedRecord.setValue( this.outputFieldMetadata.getName( ), this.getDefaultValue( ) );
+            String errorMessage = LookupTransformation.messages.getString( "error.cant.pass.through" );
+            LookupTransformation.log.error( MessageFormat.format( errorMessage, intputFieldMetadata, this.getOutputFieldMetadata( ) ) );
             }
           break;
         case THROW_EXCEPTION:

@@ -21,20 +21,36 @@
  */
 package org.netflux.core.task.filter;
 
+import java.io.Serializable;
+
 import org.netflux.core.Record;
 
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Filter that accepts a record if the values contained in the supplied fields are equal.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public class EqualToFieldFilter extends AbstractToFieldLogicFilter
   {
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns <code>true</code> if the value contained in the first field is equal to the value contained in the second field,
+   * <code>false</code> otherwise.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @param record the record to be accepted or rejected by this filter.
+   * @return <code>true</code> if the value contained in the first field is equal to the value contained in the second field,
+   *         <code>false</code> otherwise.
    */
-  public boolean accepts( Record record );
+  public boolean accepts( Record record )
+    {
+    Serializable firstValue = record.getValue( Serializable.class, this.getFieldName( ) );
+    Serializable secondValue = record.getValue( Serializable.class, this.getOtherFieldName( ) );
+    if( firstValue == null )
+      {
+      return secondValue == null;
+      }
+    else
+      {
+      return firstValue.equals( secondValue );
+      }
+    }
   }

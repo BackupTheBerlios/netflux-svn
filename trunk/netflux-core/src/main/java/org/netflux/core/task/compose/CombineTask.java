@@ -21,6 +21,7 @@
  */
 package org.netflux.core.task.compose;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +30,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
@@ -46,6 +51,9 @@ import org.netflux.core.task.AbstractTask;
  */
 public class CombineTask extends AbstractTask
   {
+  private static Log               log                      = LogFactory.getLog( CombineTask.class );
+  private static ResourceBundle    messages                 = ResourceBundle.getBundle( CombineTask.class.getName( ) );
+
   private static final Set<String> INPUT_PORT_NAMES         = new HashSet<String>( Arrays.asList( new String[] {"input"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES        = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
@@ -55,11 +63,21 @@ public class CombineTask extends AbstractTask
   protected List<String>           groupingKeyFieldNames    = new LinkedList<String>( );
 
   /**
-   * 
+   * Creates a new combine task.
    */
   public CombineTask( )
     {
-    super( CombineTask.INPUT_PORT_NAMES, CombineTask.OUTPUT_PORT_NAMES );
+    this( "CombineTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new combine task with the provided name.
+   * 
+   * @param name the name of the new combine task.
+   */
+  public CombineTask( String name )
+    {
+    super( name, CombineTask.INPUT_PORT_NAMES, CombineTask.OUTPUT_PORT_NAMES );
     }
 
   /**
@@ -199,6 +217,12 @@ public class CombineTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( CombineTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = CombineTask.messages.getString( "message.task.started" );
+        CombineTask.log.info( MessageFormat.format( startedMessage, CombineTask.this.getName( ) ) );
+        }
+
       InputPort inputPort = CombineTask.this.inputPorts.get( "input" );
       OutputPort outputPort = CombineTask.this.outputPorts.get( "output" );
       List<String> groupingKeyFieldNames = CombineTask.this.groupingKeyFieldNames;
@@ -216,6 +240,11 @@ public class CombineTask extends AbstractTask
 
           if( recordWithSameKeyFound )
             {
+            if( CombineTask.log.isTraceEnabled( ) )
+              {
+              CombineTask.log.trace( "Combining record into current record: " + record );
+              }
+
             if( !currentCombinedFieldNamesIterator.hasNext( ) )
               {
               outputPort.consume( currentOutputRecord );
@@ -236,7 +265,17 @@ public class CombineTask extends AbstractTask
             {
             if( currentOutputRecord != null )
               {
+              if( CombineTask.log.isTraceEnabled( ) )
+                {
+                CombineTask.log.trace( "Outputting combined record: " + currentOutputRecord );
+                }
+
               outputPort.consume( currentOutputRecord );
+              }
+
+            if( CombineTask.log.isTraceEnabled( ) )
+              {
+              CombineTask.log.trace( "Combining record into current record: " + record );
               }
 
             currentOutputRecord = new Record( outputPort.getMetadata( ), true );
@@ -259,14 +298,27 @@ public class CombineTask extends AbstractTask
 
         if( currentOutputRecord != null )
           {
+          if( CombineTask.log.isTraceEnabled( ) )
+            {
+            CombineTask.log.trace( "Outputting combined record: " + currentOutputRecord );
+            }
+
           outputPort.consume( currentOutputRecord );
           }
-        outputPort.consume( record );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        CombineTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( CombineTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = CombineTask.messages.getString( "message.task.finished" );
+          CombineTask.log.info( MessageFormat.format( finishedMessage, CombineTask.this.getName( ) ) );
+          }
         }
       }
     }

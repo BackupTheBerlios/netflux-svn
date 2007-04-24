@@ -21,20 +21,32 @@
  */
 package org.netflux.core.task.filter;
 
-import org.netflux.core.Record;
-
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Abstract base class for logic filters with operations between a field and a value.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public abstract class AbstractToValueLogicFilter extends AbstractLogicFilter
   {
+  private Object value;
+
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns the value to be used in the logic operation.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @return the value to be used in the logic operation.
    */
-  public boolean accepts( Record record );
+  public Object getValue( )
+    {
+    return value;
+    }
+
+  /**
+   * Sets the value to be used in the logic operation.
+   * 
+   * @param fieldName the value to be used in the logic operation.
+   */
+  public void setValue( Object value )
+    {
+    this.value = value;
+    }
   }

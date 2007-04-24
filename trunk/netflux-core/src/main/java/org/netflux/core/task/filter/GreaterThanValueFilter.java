@@ -21,20 +21,36 @@
  */
 package org.netflux.core.task.filter;
 
+import java.io.Serializable;
+
 import org.netflux.core.Record;
 
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Filter that accepts a record if the value contained in the first field is greater than the supplied value.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public class GreaterThanValueFilter extends AbstractToValueLogicFilter
   {
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns <code>true</code> if the value contained in the first field is greater than the supplied value, <code>false</code>
+   * otherwise.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @param record the record to be accepted or rejected by this filter.
+   * @return <code>true</code> if the value contained in the first field is greater than the supplied value, <code>false</code>
+   *         otherwise.
    */
-  public boolean accepts( Record record );
+  public boolean accepts( Record record )
+    {
+    Comparable firstValue = (Comparable) record.getValue( Serializable.class, this.getFieldName( ) );
+    if( firstValue == null )
+      {
+      // We consider null to be less than any other value, except null
+      return false;
+      }
+    else
+      {
+      return firstValue.compareTo( this.getValue( ) ) > 0;
+      }
+    }
   }

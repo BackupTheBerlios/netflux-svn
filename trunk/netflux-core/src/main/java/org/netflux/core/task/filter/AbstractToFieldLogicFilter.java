@@ -21,20 +21,32 @@
  */
 package org.netflux.core.task.filter;
 
-import org.netflux.core.Record;
-
 /**
- * Filter to be used in filter tasks to accept or reject records.
+ * Abstract base class for logic filters with operations between fields.
  * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
-public interface Filter
+public abstract class AbstractToFieldLogicFilter extends AbstractLogicFilter
   {
+  private String otherFieldName;
+
   /**
-   * Returns <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * Returns the name of the second field to be used in the logic operation.
    * 
-   * @param record the record to filter.
-   * @return <code>true</code> if this filter accepts the given record, <code>false</code> otherwise.
+   * @return the name of the second field to be used in the logic operation.
    */
-  public boolean accepts( Record record );
+  public String getOtherFieldName( )
+    {
+    return otherFieldName;
+    }
+
+  /**
+   * Sets the name of the second field to be used in the logic operation.
+   * 
+   * @param fieldName the name of the second field to be used in the logic operation.
+   */
+  public void setOtherFieldName( String otherFieldName )
+    {
+    this.otherFieldName = otherFieldName;
+    }
   }

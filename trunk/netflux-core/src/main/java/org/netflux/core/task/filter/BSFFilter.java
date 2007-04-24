@@ -24,20 +24,38 @@ package org.netflux.core.task.filter;
 import org.apache.bsf.BSFEngine;
 import org.apache.bsf.BSFException;
 import org.apache.bsf.BSFManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.Field;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 
 /**
+ * <p>
+ * Scripting language based filter using the <a href="http://jakarta.apache.org/bsf/">Bean Scripting Framework</a>. Thanks to the use
+ * of <a href="http://jakarta.apache.org/bsf/">BSF</a> you may use this class to implement a filter using one of the many BSF
+ * supported scripting languages (Java, Javascript, Python, Groovy,...).
+ * </p>
+ * <p>
+ * In order to use this filter, you must provide an scripting language to use and an expression written in that language that will be
+ * evaluated for every record. The result of the evaluation will determine acceptance or rejection of the corresponding record. The
+ * {@link org.netflux.core.Field field}s of the record will be made available to the scripting engine, so they may be accessed in the
+ * following way: <code>nameOfField.value</code>.
+ * </p>
+ * 
  * @author OPEN input - <a href="http://www.openinput.com/">http://www.openinput.com/</a>
  */
 public class BSFFilter implements Filter
   {
-  private String language;
-  private String expression;
+  private static Log log = LogFactory.getLog( BSFFilter.class );
+
+  private String     language;
+  private String     expression;
 
   /**
-   * @return Returns the language.
+   * Returns the name of the scripting language used by this filter.
+   * 
+   * @return the name of the scripting language used by this filter.
    */
   public String getLanguage( )
     {
@@ -45,7 +63,10 @@ public class BSFFilter implements Filter
     }
 
   /**
-   * @param language The language to set.
+   * Sets the scripting language used by this filter. Please, refer to the <a href="http://jakarta.apache.org/bsf/">BSF</a>
+   * documentation to find about valid scripting language names.
+   * 
+   * @param language the name of the scripting language to be used by this filter.
    */
   public void setLanguage( String language )
     {
@@ -53,7 +74,9 @@ public class BSFFilter implements Filter
     }
 
   /**
-   * @return Returns the expression.
+   * Returns the expression to be evaluated to filter records.
+   * 
+   * @return the expression to be evaluated to filter records.
    */
   public String getExpression( )
     {
@@ -61,21 +84,20 @@ public class BSFFilter implements Filter
     }
 
   /**
-   * @param expression The expression to set.
+   * Sets the expressión to be evaluated to filter records. Inside this expression, a typical object oriented scripting language like
+   * <a href="http://www.beanshell.org/">BeanShell</a> may access field values using an expression like this:
+   * <code>nameOfField.value</code>. The expression should return a boolean value, or at least a value that can be casted to
+   * boolean.
+   * 
+   * @param expression the expression to be used to filter records.
    */
   public void setExpression( String expression )
     {
     this.expression = expression;
     }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.netflux.core.task.filter.Filter#accepts(org.netflux.core.Record)
-   */
   public boolean accepts( Record record )
     {
-    // TODO: Add exception handling
     try
       {
       BSFManager manager = new BSFManager( );
@@ -90,6 +112,7 @@ public class BSFFilter implements Filter
       }
     catch( BSFException exc )
       {
+      BSFFilter.log.debug( "Exception while evaluating expression", exc );
       return false;
       }
     }

@@ -21,14 +21,19 @@
  */
 package org.netflux.core.task.compose;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.netflux.core.FieldMetadata;
 import org.netflux.core.Record;
 import org.netflux.core.RecordMetadata;
@@ -44,6 +49,9 @@ import org.netflux.core.task.AbstractTask;
  */
 public class NaturalJoinTask extends AbstractTask
   {
+  private static Log               log               = LogFactory.getLog( NaturalJoinTask.class );
+  private static ResourceBundle    messages          = ResourceBundle.getBundle( NaturalJoinTask.class.getName( ) );
+
   private static final Set<String> INPUT_PORT_NAMES  = new HashSet<String>( Arrays.asList( new String[] {"leftInput", "rightInput"} ) );
   private static final Set<String> OUTPUT_PORT_NAMES = new HashSet<String>( Arrays.asList( new String[] {"output"} ) );
 
@@ -56,11 +64,21 @@ public class NaturalJoinTask extends AbstractTask
   protected List<String>                  joinKeyFieldNames;
 
   /**
-   * 
+   * Creates a new natural join task.
    */
   public NaturalJoinTask( )
     {
-    super( NaturalJoinTask.INPUT_PORT_NAMES, NaturalJoinTask.OUTPUT_PORT_NAMES );
+    this( "NaturalJoinTask|" + UUID.randomUUID( ).toString( ) );
+    }
+
+  /**
+   * Creates a new natural join task with the provided name.
+   * 
+   * @param name the name of the new natural join task.
+   */
+  public NaturalJoinTask( String name )
+    {
+    super( name, NaturalJoinTask.INPUT_PORT_NAMES, NaturalJoinTask.OUTPUT_PORT_NAMES );
     }
 
   /**
@@ -167,6 +185,12 @@ public class NaturalJoinTask extends AbstractTask
     @Override
     public void run( )
       {
+      if( NaturalJoinTask.log.isInfoEnabled( ) )
+        {
+        String startedMessage = NaturalJoinTask.messages.getString( "message.task.started" );
+        NaturalJoinTask.log.info( MessageFormat.format( startedMessage, NaturalJoinTask.this.getName( ) ) );
+        }
+
       InputPort leftInputPort = NaturalJoinTask.this.inputPorts.get( "leftInput" );
       InputPort rightInputPort = NaturalJoinTask.this.inputPorts.get( "rightInput" );
       OutputPort outputPort = NaturalJoinTask.this.outputPorts.get( "output" );
@@ -214,6 +238,11 @@ public class NaturalJoinTask extends AbstractTask
             lastRightRecord = inputRecord;
             }
 
+          if( NaturalJoinTask.log.isTraceEnabled( ) )
+            {
+            NaturalJoinTask.log.trace( "Comparing records: LEFT(" + leftRecords + ") - RIGHT(" + rightRecords + ")" );
+            }
+
           int comparison;
           if( leftRecords.isEmpty( ) )
             {
@@ -231,11 +260,16 @@ public class NaturalJoinTask extends AbstractTask
 
           if( comparison == 0 )
             {
+            NaturalJoinTask.log.trace( "Keys are equal, joining records" );
             for( Record leftRecord : leftRecords )
               {
               for( Record rightRecord : rightRecords )
                 {
                 Record joinedRecord = leftRecord.concatenate( rightRecord.supress( NaturalJoinTask.this.joinKeyFieldNames ) );
+                if( NaturalJoinTask.log.isTraceEnabled( ) )
+                  {
+                  NaturalJoinTask.log.trace( "Outputting joined record: " + joinedRecord );
+                  }
                 outputPort.consume( joinedRecord );
                 }
               }
@@ -244,6 +278,7 @@ public class NaturalJoinTask extends AbstractTask
             }
           else if( comparison < 0 )
             {
+            NaturalJoinTask.log.trace( "Left keys are lesser than right keys" );
             if( NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.LEFT_OUTER_JOIN )
                 || NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.FULL_OUTER_JOIN ) )
               {
@@ -251,14 +286,23 @@ public class NaturalJoinTask extends AbstractTask
                 {
                 Record nullRightRecord = new Record( rightMetadataWithoutKey, true );
                 Record joinedRecord = leftRecord.concatenate( nullRightRecord );
+                if( NaturalJoinTask.log.isTraceEnabled( ) )
+                  {
+                  NaturalJoinTask.log.trace( "Outputting joined record: " + joinedRecord );
+                  }
                 outputPort.consume( joinedRecord );
                 }
+              }
+            else
+              {
+              NaturalJoinTask.log.trace( "Discarding left records" );
               }
             leftRecords.clear( );
             }
           else
             {
             // comparison > 0
+            NaturalJoinTask.log.trace( "Left keys are greater than right keys" );
             if( NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.RIGHT_OUTER_JOIN )
                 || NaturalJoinTask.this.getJoinType( ).equals( NaturalJoinTask.NaturalJoinType.FULL_OUTER_JOIN ) )
               {
@@ -267,19 +311,34 @@ public class NaturalJoinTask extends AbstractTask
                 Record joinedRecord = new Record( leftInputPort.getMetadata( ), true );
                 joinedRecord.setFields( rightRecord.extract( NaturalJoinTask.this.joinKeyFieldNames ) );
                 joinedRecord.add( rightRecord.supress( NaturalJoinTask.this.joinKeyFieldNames ) );
+                if( NaturalJoinTask.log.isTraceEnabled( ) )
+                  {
+                  NaturalJoinTask.log.trace( "Outputting joined record: " + joinedRecord );
+                  }
                 outputPort.consume( joinedRecord );
                 }
+              }
+            else
+              {
+              NaturalJoinTask.log.trace( "Discarding right records" );
               }
             rightRecords.clear( );
             }
           }
-
-        outputPort.consume( Record.END_OF_DATA );
         }
       catch( InterruptedException exc )
         {
-        // TODO: handle exception
-        exc.printStackTrace( );
+        NaturalJoinTask.log.debug( "Exception while reading record", exc );
+        }
+      finally
+        {
+        outputPort.consume( Record.END_OF_DATA );
+
+        if( NaturalJoinTask.log.isInfoEnabled( ) )
+          {
+          String finishedMessage = NaturalJoinTask.messages.getString( "message.task.finished" );
+          NaturalJoinTask.log.info( MessageFormat.format( finishedMessage, NaturalJoinTask.this.getName( ) ) );
+          }
         }
       }
     }
